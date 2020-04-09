@@ -1,0 +1,15 @@
+{
+  "name": "otp-runner",
+  "version": "1.0.0",
+  "description": "Scripts to assemble data and run OpenTripPlanner",
+  "main": "index.js",
+  "repository": "https://github.com/ibi-group/otp-runner.git",
+  "author": "evansiroky <evan.siroky@yahoo.com>",
+  "license": "MIT",
+  "private": false,
+  "dependencies": {
+    "execa": "^4.0.0",
+    "fs-extra": "^9.0.0",
+    "got": "^10.7.0"
+  }
+}
