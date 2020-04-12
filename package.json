@@ -7,9 +7,17 @@
   "author": "evansiroky <evan.siroky@yahoo.com>",
   "license": "MIT",
   "private": false,
+  "scripts": {
+    "start": "node index.js",
+    "update-docs": "node update-docs.js"
+  },
   "dependencies": {
+    "ajv": "^6.12.0",
     "execa": "^4.0.0",
     "fs-extra": "^9.0.0",
     "got": "^10.7.0"
+  },
+  "devDependencies": {
+    "markdown-table": "^2.0.0"
   }
 }

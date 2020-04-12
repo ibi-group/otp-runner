@@ -1,0 +1,76 @@
+{
+  "title": "otp-runner manifest.json",
+  "description": "A manifest for helping run OpenTripPlanner.",
+  "required": [
+    "gtfsAndOsmUrls"
+  ],
+  "properties": {
+    "buildGraph": {
+      "type": "boolean",
+      "description": "If true, run OpenTripPlanner in build mode",
+      "default": true
+    },
+    "buildLogFile": {
+      "type": "string",
+      "description": "The path where the build logs should be written to.",
+      "default": "/var/log/otp-build.log"
+    },
+    "downloadGraph": {
+      "type": "boolean",
+      "description": "If true, the graph.obj file will be downloaded even if it exists on the computer. (This does not apply when running both build and server in the same script). Note: if this is set to true, graphObjUrl must be defined.",
+      "default": false
+    },
+    "graphObjUrl": {
+      "type": "string",
+      "description": "An s3 url where the graph.obj should be uploaded to after a graph build or downloaded from for server-only runs."
+    },
+    "graphsFolder": {
+      "type": "string",
+      "description": "The folder where the graphs should be stored.",
+      "default": "/var/otp/graphs"
+    },
+    "gtfsAndOsmUrls": {
+      "type": "array",
+      "description": "An array of GTFS and OSM urls that should be downloaded.",
+      "items": {
+        "type": "string",
+        "description": "Either a url or s3 url."
+      }
+    },
+    "routerName": {
+      "type": "string",
+      "description": "The name of the OTP router.",
+      "default": "default"
+    },
+    "jarFile": {
+      "type": "string",
+      "description": "The full path to the OTP jar file.",
+      "default": "/opt/otp-1.4.0-shaded.jar"
+    },
+    "jarUrl": {
+      "type": "string",
+      "description": "A url where the OTP jar can be downloaded from.",
+      "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
+    },
+    "runServer": {
+      "type": "boolean",
+      "description": "If true, run OTP as a server.",
+      "default": true
+    },
+    "serverLogFile": {
+      "type": "string",
+      "description": "The file location to write server logs to.",
+      "default": "/var/log/otp-server.log"
+    },
+    "statusFileLocation": {
+      "type": "string",
+      "description": "The file location to write status updates about this script to.",
+      "default": "status.json"
+    },
+    "uploadGraph": {
+      "type": "boolean",
+      "description": "If true, the graph.obj file will be uploaded after graph build. Note: if this is set to true, graphObjUrl must be defined.",
+      "default": false
+    }
+  }
+}

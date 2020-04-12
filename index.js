@@ -1,20 +1,22 @@
+/**
+ * This script will automate common tasks with OpenTripPlanner such as
+ * downloading needed OSM and GTFS files, builing a graph and running a graph.
+ */
+
 const path = require('path')
 const stream = require('stream')
 const {promisify} = require('util')
 
+const Ajv = require('ajv')
 const execa = require('execa')
 const fs = require('fs-extra')
 const got = require('got')
 
+const manifestJsonSchema = require('./manifest-json-schema.json')
+
 const pipeline = promisify(stream.pipeline)
 
-let config
-const defaultConfig = {
-  jarFolder: '/opt',
-  jarName: 'otp-1.4.0-shaded.jar',
-  jarUrl: 'https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar',
-  statusFileLocation: 'status.json'
-}
+let manifest
 
 async function fail (message) {
   console.error(message)
@@ -36,7 +38,12 @@ const status = {
  * Updates a status file with the overall progress.
  */
 async function updateStatus () {
-  await fs.writeFile(config.statusFileLocation, JSON.stringify(status))
+  await fs.writeFile(
+    (manifest && manifest.statusFileLocation)
+      ? manifest.statusFileLocation
+      : './status.json',
+    JSON.stringify(status)
+  )
 }
 
 async function updateDownloadStatus (urlDownloaded) {
@@ -57,7 +64,8 @@ async function downloadFileFromUrlIfNeeded ({ dest, url }) {
     try {
       await pipeline(got.stream(url), fs.createWriteStream(dest))
     } catch (e) {
-      await fail(`Failed to download file from url: ${url}`)
+      console.error(e)
+      await fail(`Failed to download file from url: ${url}. Error: ${e}`)
     }
   }
   await updateDownloadStatus(url)
@@ -75,13 +83,15 @@ async function downloadFileFromS3IfNeeded ({ dest, url }) {
     try {
       await execa('aws', ['s3', 'cp', url, dest])
     } catch (e) {
-      await fail(`Failed to download file from s3: ${url}`)
+      console.error(e)
+      await fail(`Failed to download file from s3: ${url}. Error: ${e}`)
     }
   }
   await updateDownloadStatus(url)
 }
 
 function makeDownloadTask ({ dest, url }) {
+  status.totalFilesToDownload++
   if ((new URL(url)).protocol === 's3') {
     return downloadFileFromS3IfNeeded({ dest, url })
   } else {
@@ -89,24 +99,71 @@ function makeDownloadTask ({ dest, url }) {
   }
 }
 
-async function main () {
-  // read json config file
-  if (!(await fs.pathExists('config.json'))) {
-    config = defaultConfig
-    await fail('config.json file does not exist!')
+/**
+ * Validate the manifest to make sure all of the necessary items are configured
+ * for the actions that need to be taken.
+ */
+async function validateManifest () {
+  // first validate using the manifest's JSON schema. This will also add in all
+  // of the default values to the manifest variable
+  const ajv = new Ajv({ allErrors: true, useDefaults: true })
+  const validator = ajv.compile(manifestJsonSchema)
+  const isValid = validator(manifest)
+  if (!isValid) {
+    await fail(ajv.errorsText(validator.errors))
   }
-  config = require('./config.json')
+
+  // if build is set to true, then gtfsAndOsmUrls needs to be defined
+  if (manifest.buildGraph && !manifest.gtfsAndOsmUrls) {
+    await fail('gtfsUrls or osmUrls must be populated for graph build')
+  }
+
+  if (
+    (manifest.downloadGraph || manifest.uploadGraph) &&
+      !manifest.graphObjUrl
+  ) {
+    await fail('graphObjUrl must be defined if `downloadGraph` or `uploadGraph` is set to true')
+  }
+}
+
+async function main () {
+  // read json manifest file
+  if (!(await fs.pathExists('manifest.json'))) {
+    await fail('manifest.json file does not exist!')
+  }
+  manifest = require('./manifest.json')
+
+  await validateManifest()
+
+  // ensure certain directories exist
+  await fs.mkdirp(path.join(manifest.graphsFolder, manifest.routerName))
 
   // determine what files need to be downloaded
   const downloadTasks = []
 
-  // add OTP jar
+  // add task to download OTP jar
   downloadTasks.push(makeDownloadTask({
-    dest: path.join(config.jarFolder, config.jarName),
-    url: config.jarUrl
+    dest: manifest.jarFile,
+    url: manifest.jarUrl
   }))
 
+  // add tasks to download GTFS and OSM files
+  manifest.gtfsAndOsmUrls.forEach(url => {
+    const splitUrl = url.split('/')
+    downloadTasks.push(
+      makeDownloadTask({
+        dest: path.join(
+          manifest.graphsFolder,
+          manifest.routerName,
+          splitUrl[splitUrl.length - 1]
+        ),
+        url
+      })
+    )
+  })
+
   // download files asynchronously
+  console.log(`Downloading ${status.totalFilesToDownload} files...`)
   try {
     await Promise.all(downloadTasks)
   } catch (e) {
