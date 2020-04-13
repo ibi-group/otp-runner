@@ -17,6 +17,7 @@ const manifestJsonSchema = require('./manifest-json-schema.json')
 const pipeline = promisify(stream.pipeline)
 
 let manifest
+const downloadTasks = []
 
 async function fail (message) {
   console.error(message)
@@ -90,12 +91,12 @@ async function downloadFileFromS3IfNeeded ({ dest, url }) {
   await updateDownloadStatus(url)
 }
 
-function makeDownloadTask ({ dest, url }) {
+function addDownloadTask ({ dest, url }) {
   status.totalFilesToDownload++
   if ((new URL(url)).protocol === 's3') {
-    return downloadFileFromS3IfNeeded({ dest, url })
+    downloadTasks.push(downloadFileFromS3IfNeeded({ dest, url }))
   } else {
-    return downloadFileFromUrlIfNeeded({ dest, url })
+    downloadTasks.push(downloadFileFromUrlIfNeeded({ dest, url }))
   }
 }
 
@@ -118,11 +119,14 @@ async function validateManifest () {
     await fail('gtfsUrls or osmUrls must be populated for graph build')
   }
 
-  if (
-    (manifest.downloadGraph || manifest.uploadGraph) &&
-      !manifest.graphObjUrl
-  ) {
-    await fail('graphObjUrl must be defined if `downloadGraph` or `uploadGraph` is set to true')
+  // if build is set to true, then the graphObjUrl must be an s3 url
+  if (manifest.uploadGraph && (new URL(manifest.graphObjUrl).protocol !== 's3') {
+    await fail('graphObjUrl must be an s3 url in order to upload graph.obj file')
+  }
+
+  // if build is set to false, then the graphObjUrl must be defined
+  if (!manifest.buildGraph && !manifest.graphObjUrl) {
+    await fail('graphObjUrl must be defined in run-server-only mode')
   }
 }
 
@@ -138,20 +142,17 @@ async function main () {
   // ensure certain directories exist
   await fs.mkdirp(path.join(manifest.graphsFolder, manifest.routerName))
 
-  // determine what files need to be downloaded
-  const downloadTasks = []
-
   // add task to download OTP jar
-  downloadTasks.push(makeDownloadTask({
+  addDownloadTask({
     dest: manifest.jarFile,
     url: manifest.jarUrl
   }))
 
-  // add tasks to download GTFS and OSM files
-  manifest.gtfsAndOsmUrls.forEach(url => {
-    const splitUrl = url.split('/')
-    downloadTasks.push(
-      makeDownloadTask({
+  if (manifest.buildGraph) {
+    // add tasks to download GTFS and OSM files
+    manifest.gtfsAndOsmUrls.forEach(url => {
+      const splitUrl = url.split('/')
+      addDownloadTask({
         dest: path.join(
           manifest.graphsFolder,
           manifest.routerName,
@@ -159,8 +160,15 @@ async function main () {
         ),
         url
       })
-    )
-  })
+    })
+  } else if (manifest.runServer) {
+    // manifest says to run the server without building a graph. Therefore,
+    // download a graph.obj file.
+    addDownloadTask({
+      dest: path.join(manifest.graphsFolder, manifest.routerName, 'graph.obj'),
+      url: manifest.graphObjUrl
+    })
+  }
 
   // download files asynchronously
   console.log(`Downloading ${status.totalFilesToDownload} files...`)
@@ -171,10 +179,38 @@ async function main () {
   }
 
   // build graph if needed
+  if (manifest.buildGraph) {
+    // write build-config.json file if contents are supplied in manifest
+    if (manifest.buildConfigJSON) {
+      await fs.writeFile(
+        path.join(graphsFolder, routerName, 'build-config.json'),
+        manifest.buildConfigJSON
+      )
+    }
 
-  // upload graph.obj if needed
+    // build graph
+
+    // upload graph.obj if needed
+
+    // create/upload bundle if needed
+
+  } else if (manifest.runServer) {
+    // download graph.obj if needed
+
+  }
 
   // start server if needed
+  if (manifest.runServer) {
+    // write build-config.json file if contents are supplied in manifest
+    if (manifest.routerConfigJSON) {
+      await fs.writeFile(
+        path.join(graphsFolder, routerName, 'router-config.json'),
+        manifest.routerConfigJSON
+      )
+    }
+
+    // run server
+  }
 }
 
 main()

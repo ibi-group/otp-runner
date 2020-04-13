@@ -1,10 +1,11 @@
 {
   "title": "otp-runner manifest.json",
   "description": "A manifest for helping run OpenTripPlanner.",
-  "required": [
-    "gtfsAndOsmUrls"
-  ],
   "properties": {
+    "buildConfigJSON": {
+      "type": "string",
+      "description": "The raw contents to write to the build-config.json file."
+    },
     "buildGraph": {
       "type": "boolean",
       "description": "If true, run OpenTripPlanner in build mode",
@@ -15,14 +16,9 @@
       "description": "The path where the build logs should be written to.",
       "default": "/var/log/otp-build.log"
     },
-    "downloadGraph": {
-      "type": "boolean",
-      "description": "If true, the graph.obj file will be downloaded even if it exists on the computer. (This does not apply when running both build and server in the same script). Note: if this is set to true, graphObjUrl must be defined.",
-      "default": false
-    },
     "graphObjUrl": {
       "type": "string",
-      "description": "An s3 url where the graph.obj should be uploaded to after a graph build or downloaded from for server-only runs."
+      "description": "A url where the graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uplaoded to."
     },
     "graphsFolder": {
       "type": "string",
@@ -37,11 +33,6 @@
         "description": "Either a url or s3 url."
       }
     },
-    "routerName": {
-      "type": "string",
-      "description": "The name of the OTP router.",
-      "default": "default"
-    },
     "jarFile": {
       "type": "string",
       "description": "The full path to the OTP jar file.",
@@ -51,6 +42,15 @@
       "type": "string",
       "description": "A url where the OTP jar can be downloaded from.",
       "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
+    },
+    "routerConfigJSON": {
+      "type": "string",
+      "description": "The raw contents to write to the router-config.json file."
+    },
+    "routerName": {
+      "type": "string",
+      "description": "The name of the OTP router.",
+      "default": "default"
     },
     "runServer": {
       "type": "boolean",

@@ -17,7 +17,7 @@ async function main () {
     tableData.push([
       key,
       keyData.type,
-      jsonSchema.required.includes(key) ? 'Required' : 'Optional',
+      (jsonSchema.required || []).includes(key) ? 'Required' : 'Optional',
       keyData.default,
       keyData.description
     ])
