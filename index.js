@@ -3,6 +3,7 @@
  * downloading needed OSM and GTFS files, builing a graph and running a graph.
  */
 
+const { spawn } = require('child_process')
 const os = require('os')
 const path = require('path')
 const stream = require('stream')
@@ -162,14 +163,12 @@ async function runOtpCommand (command) {
     await fail(`Unsupported OTP command: ${command}`)
   }
 
-  // prepare execa options. In all cases, create a combined stdout and stderr
-  // output stream via setting the all flag to true.
+  const isBuild = command === 'build'
+
+  // prepare execa options. Create a combined stdout and stderr output stream
+  // via setting the all flag to true.
   const execaOptions = {
     all: true
-  }
-  // Create a detached process if running as a server is desired.
-  if (command === 'server') {
-    execaOptions.detached = true
   }
 
   // Use potentially all available memory minus 2GB for the OS, but use a
@@ -178,73 +177,109 @@ async function runOtpCommand (command) {
     Math.round(os.totalmem() / 1000 - 2097152),
     1500000
   )
-  // TODO make sure logs are written to a file also
+  const cmd = 'java'
   const args = [
     '-jar',
     `-Xmx${memoryToUse}k`,
     manifest.jarFile,
     `--${command}`
   ]
-  if (command === 'build') {
+  if (isBuild) {
     args.push(path.join(manifest.graphsFolder, manifest.routerName))
   } else {
-    args.push('--basePath')
+    args.push('--graphs')
     args.push(manifest.graphsFolder)
-  }
-  const subprocess = execa('java', args, execaOptions)
-
-  // keep the last 100 logs to stdout/stderr in memory
-  const last100Logs = new CircularBuffer(100)
-
-  let foundSuccessfulServerStartMessage = false
-
-  // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer and
-  // checking for a successful server start.
-  subprocess.all.on('data', (data) => {
-    const lastMessage = data.toString().trim()
-    if (lastMessage.includes('Grizzly server running')) {
-      foundSuccessfulServerStartMessage = true
-    }
-    if (lastMessage !== '') {
-      last100Logs.push(lastMessage)
-    }
-  })
-
-  // Check on OTP as it starts up. If graph building, wait until graph building
-  // is complete. If in server mode check if the successful server start message
-  // was found. Either way, update the status as graph build progresses.
-  while (subprocess.exitCode === null && !foundSuccessfulServerStartMessage) {
-    await waitOneSecond()
-    // Update status with the latest message from the OTP logs
-    const updatePrefix = command === 'build'
-      ? 'Building graph...'
-      : 'Starting server...'
-    const lastLog = last100Logs.size() > 1
-      ? last100Logs
-          .get(last100Logs.size() - 1) // get the most recent entry
-          .replace(/^\d\d\:\d\d\:.*\(.*\)\s*/, '') // strip java timestamp and class
-          .substring(0, 60)
-      : ''
-    await updateStatus(`${updatePrefix} (${lastLog})`)
+    args.push('--router')
+    args.push(manifest.routerName)
   }
 
-  // OTP exited, check if it was successful and do something if not
-  if (subprocess.exitCode > 0) {
-    console.error(last100Logs.toarray().join('\n'))
-    // immediately upload logs
-    if (command === 'build') {
+  if (isBuild) {
+    // in build mode, use execa which simplifies a few things
+    const subprocess = execa(cmd, args, execaOptions)
+
+    // keep the last 100 logs to stdout/stderr in memory
+    const last100Logs = new CircularBuffer(100)
+
+    // Pipe all output to a logfile
+    subprocess.all.pipe(fs.createWriteStream(manifest.buildLogFile))
+    // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer.
+    subprocess.all.on('data', (data) => {
+      const lastMessage = data.toString().trim()
+      if (lastMessage !== '') {
+        last100Logs.push(lastMessage)
+      }
+    })
+
+    // Check on OTP as it starts up. Wait until graph building is complete. Update
+    // the status as graph build progresses.
+    while (subprocess.exitCode === null) {
+      await waitOneSecond()
+      // Update status with the latest message from the OTP logs
+      const lastLog = last100Logs.size() > 1
+        ? last100Logs
+            .get(last100Logs.size() - 1) // get the most recent entry
+            .replace(/^\d\d\:\d\d\:.*\(.*\)\s*/, '') // strip java timestamp and class
+            .substring(0, 60)
+        : ''
+      await updateStatus(`Building graph... ${lastLog !== '' ? ` (${lastLog})` : ''}`)
+    }
+
+    // OTP exited, check if it was successful and do something if not
+    if (subprocess.exitCode > 0) {
+      console.error(last100Logs.toarray().join('\n'))
+      // immediately upload logs
       await uploadBuildLogs()
       await fail('Build graph failed! Please see logs.')
-    } else {
-      // TODO upload logs
-      await fail('Server failed to start! Please see logs.')
     }
-  }
+  } else {
+    // if running as a server, use native child_process library instead of
+    // execa because it does not seem possible to keep writing output to logs
+    // while running detached processes with execa.
+    const out = fs.openSync(manifest.serverLogFile, 'w')
+    const otpServerProcess = spawn(
+      cmd,
+      args,
+      { detached: true, stdio: [ 'ignore', out, out ] }
+    )
+    otpServerProcess.unref()
+    await updateStatus('Starting OTP server...')
+    console.log(`${cmd} ${args.join(' ')} running as pid ${otpServerProcess.pid}`)
 
-  // Do some extra things if the server successfully started
-  if (foundSuccessfulServerStartMessage) {
-    // TODO upload server start logs?
-    // TODO verify that server logs continue to get written after script stops
+    let foundSuccessfulServerStartMessage = false
+    let graphRead = false
+    const serverStartTime = (new Date()).getTime()
+    while (!foundSuccessfulServerStartMessage || !graphRead) {
+      // Make sure server process is still running
+      if (otpServerProcess.exitCode !== null) {
+        console.error(await fs.readFile(manifest.serverLogFile, { encoding: 'UTF-8' }))
+        await uploadServerLogs()
+        await fail(`Server failed to start and exited with code ${otpServerProcess.exitCode}`)
+      }
+
+      // wait one second before reading the logs
+      await waitOneSecond()
+
+      // read logs and check if the graph was read and the server started
+      const data = await fs.readFile(manifest.serverLogFile, { encoding: 'UTF-8' })
+      // check for server startup
+      if (data.includes('Grizzly server running')) {
+        foundSuccessfulServerStartMessage = true
+      }
+      // make sure the graph was read
+      if (data.includes('Main graph read.')) {
+        graphRead = true
+      }
+
+      // Fail this script if it has taken took long for the server to startup
+      if ((new Date()).getTime() - serverStartTime > manifest.serverStartupTimeoutSeconds * 1000) {
+        // Server startup timeout occurred! Kill the process, upload logs if
+        // needed and fail.
+        otpServerProcess.kill()
+        await uploadServerLogs()
+        await fail(`Server took longer than ${manifest.serverStartupTimeoutSeconds} seconds to start!`)
+      }
+    }
+
     await updateStatus('Server successfully started!', 100)
   }
 }
@@ -258,6 +293,10 @@ async function uploadGraphObj () {
 }
 
 async function createAndUploadBundle () {
+  // TODO
+}
+
+async function uploadServerLogs () {
   // TODO
 }
 

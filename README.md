@@ -28,5 +28,6 @@ In order to run this script, a file called `manifest.json` must be created in th
 | routerName | string | Optional | default | The name of the OTP router. |
 | runServer | boolean | Optional | true | If true, run OTP as a server. |
 | serverLogFile | string | Optional | /var/log/otp-server.log | The file location to write server logs to. |
+| serverStartupTimeoutSeconds | number | Optional | 300 | The amount of time to wait for a successful server startup before failing. |
 | statusFileLocation | string | Optional | status.json | The file location to write status updates about this script to. |
 | uploadGraph | boolean | Optional | false | If true, the graph.obj file will be uploaded after graph build. Note: if this is set to true, graphObjUrl must be defined. |
