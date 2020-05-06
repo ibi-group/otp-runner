@@ -7,8 +7,15 @@
   "author": "evansiroky <evan.siroky@yahoo.com>",
   "license": "MIT",
   "private": false,
+  "bin": {
+    "otp-runner": "bin/otp-runner.js"
+  },
   "scripts": {
-    "start": "node index.js",
+    "cover": "yarn jest --coverage --coverage-paths index.js",
+    "jest": "mastarm test --run-in-band",
+    "lint": "mastarm lint *.js",
+    "start": "node bin/otp-runner.js manifest.json",
+    "test": "yarn lint && yarn jest",
     "update-docs": "node update-docs.js"
   },
   "dependencies": {
@@ -16,9 +23,12 @@
     "circular-buffer": "^1.0.2",
     "execa": "^4.0.0",
     "fs-extra": "^9.0.0",
-    "got": "^10.7.0"
+    "got": "^10.7.0",
+    "simple-node-logger": "^18.12.24"
   },
   "devDependencies": {
-    "markdown-table": "^2.0.0"
+    "lodash.isequal": "^4.5.0",
+    "markdown-table": "^2.0.0",
+    "mastarm": "^5.3.1"
   }
 }

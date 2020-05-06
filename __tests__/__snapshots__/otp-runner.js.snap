@@ -1,0 +1,77 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`otp-runner failures should fail if a download fails 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Failed to download file from s3: s3://mock-download-bucket/failme.jar. Error: Error: mock download failure",
+  "numFilesDownloaded": 0,
+  "pctProgress": 10,
+  "serverStarted": false,
+  "totalFilesToDownload": 1,
+}
+`;
+
+exports[`otp-runner failures should fail with invalid manifest.json 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "data.buildGraph should be boolean",
+  "numFilesDownloaded": 0,
+  "pctProgress": 0,
+  "serverStarted": false,
+  "totalFilesToDownload": 0,
+}
+`;
+
+exports[`otp-runner failures should fail with ok JSON schema, but improper config 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "The following errors were found in the manifest.json file:
+
+      gtfsUrls or osmUrls must be populated for graph build
+graphObjUrl must be an s3 url in order to upload graph.obj file
+s3UploadBucket must be defined if \`uploadGraphBuildLogs\` is set to true
+s3UploadBucket must be defined if \`uploadGraphBuildReport\` is set to true
+s3UploadBucket must be defined if \`uploadOtpRunnerLogs\` is set to true
+s3UploadBucket must be defined if \`uploadServerStartupLogs\` is set to true",
+  "numFilesDownloaded": 0,
+  "pctProgress": 0,
+  "serverStarted": false,
+  "totalFilesToDownload": 0,
+}
+`;
+
+exports[`otp-runner successes should build a graph and start a server 1`] = `
+Object {
+  "error": false,
+  "graphBuilt": true,
+  "graphUploaded": true,
+  "message": "Server successfully started!",
+  "numFilesDownloaded": 1,
+  "pctProgress": 100,
+  "serverStarted": true,
+  "totalFilesToDownload": 1,
+}
+`;
+
+exports[`otp-runner successes should build a graph and start a server 2`] = `"{\\"htmlAnnotations\\": true}"`;
+
+exports[`otp-runner successes should build a graph and start a server 3`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner successes should build a graph and start a server 4`] = `"Mock building completed successfully!"`;
+
+exports[`otp-runner successes should build a graph and start a server 5`] = `
+"
+          22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357
+          22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running.
+          "
+`;
+
+exports[`otp-runner successes should build a graph and start a server 6`] = `"mock graph"`;
+
+exports[`otp-runner successes should build a graph and start a server 7`] = `"mock graph build report"`;

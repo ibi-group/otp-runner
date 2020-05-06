@@ -26,7 +26,7 @@ async function main () {
   let readmeContent = await fs.readFile('./README.md', { encoding: 'UTF-8' })
   readmeContent = readmeContent.substring(0, readmeContent.indexOf('### Manifest.json values') + 26)
   readmeContent = readmeContent.concat(
-`*The rest of this README contains auto-generated contents via the \`yarn update-docs\` script and should not be directly edited!*
+    `*The rest of this README contains auto-generated contents via the \`yarn update-docs\` script and should not be directly edited!*
 
 ${markdownTable(tableData, { alignDelimiters: false })}`
   )

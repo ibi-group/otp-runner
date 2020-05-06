@@ -43,6 +43,11 @@
       "description": "A url where the OTP jar can be downloaded from.",
       "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
     },
+    "otpRunnerLogFile": {
+      "type": "string",
+      "description": "The path where the otp-runner logs should be written to.",
+      "default": "/var/log/otp-runner.log"
+    },
     "routerConfigJSON": {
       "type": "string",
       "description": "The raw contents to write to the router-config.json file."
@@ -56,6 +61,10 @@
       "type": "boolean",
       "description": "If true, run OTP as a server.",
       "default": true
+    },
+    "s3UploadBucket": {
+      "type": "string",
+      "description": "The base path of an s3 bucket where files will be uploaded to."
     },
     "serverLogFile": {
       "type": "string",
@@ -72,9 +81,29 @@
       "description": "The file location to write status updates about this script to.",
       "default": "status.json"
     },
+    "uploadGraphBuildLogs": {
+      "type": "boolean",
+      "description": "If true, the logs from a graph build will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-build.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "default": false
+    },
+    "uploadGraphBuildReport": {
+      "type": "boolean",
+      "description": "If true, the OTP-generated graph build report will be zipped up and uploaded to the provided s3 bucket to the path `${s3UploadBucket}/graph-build-report.zip`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "default": false
+    },
     "uploadGraph": {
       "type": "boolean",
-      "description": "If true, the graph.obj file will be uploaded after graph build. Note: if this is set to true, graphObjUrl must be defined.",
+      "description": "If true, the graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUrl` must be defined and be a valid AWS s3 path.",
+      "default": false
+    },
+    "uploadOtpRunnerLogs": {
+      "type": "boolean",
+      "description": "If true, the logs from the otp-runner script will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-runner.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "default": false
+    },
+    "uploadServerStartupLogs": {
+      "type": "boolean",
+      "description": "If true, the logs from the server startup will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-server.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
       "default": false
     }
   }

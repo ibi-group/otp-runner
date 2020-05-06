@@ -14,390 +14,536 @@ const CircularBuffer = require('circular-buffer')
 const execa = require('execa')
 const fs = require('fs-extra')
 const got = require('got')
+const SimpleNodeLogger = require('simple-node-logger')
 
 const manifestJsonSchema = require('./manifest-json-schema.json')
 
 const pipeline = promisify(stream.pipeline)
 
-let manifest
-const downloadTasks = []
-
-async function fail (message) {
-  console.error(message)
-  status.error = true
-  status.message = message
-  await updateStatus()
-  process.exit(1)
-}
-
-const status = {
-  error: false,
-  message: 'Inintializing...',
-  numFilesDownloaded: 0,
-  pctProgress: 0,
-  totalFilesToDownload: 0
-}
-
-/**
- * Updates the status file with the overall progress.
- *
- * @param  {string} [message]     If provided, a new message to update the
- *  status with before writing to file.
- * @param  {number} [pctProgress] If provided, a new percent progress to set
- */
-async function updateStatus (message, pctProgress) {
-  if (message) {
-    console.log(message)
-    status.message = message
-  }
-  if (pctProgress) {
-    status.pctProgress = pctProgress
-  }
-  await fs.writeFile(
-    (manifest && manifest.statusFileLocation)
-      ? manifest.statusFileLocation
-      : './status.json',
-    JSON.stringify(status)
-  )
-}
-
-async function updateDownloadStatus (urlDownloaded) {
-  status.numFilesDownloaded++
-  await updateStatus(
-    `Downloaded ${urlDownloaded} (${status.numFilesDownloaded} / ${status.totalFilesToDownload} files)`
-  )
-}
-
-/**
- * Downloads a file using a sreaming API if it doesn't already exist. Updates
- * the status after each download.
- *
- * @param  {string} dest The path to save the downloaded file to
- * @param  {string} url  The url to download the file from
- */
-async function downloadFileFromUrlIfNeeded ({ dest, url }) {
-  if (!(await fs.pathExists(dest))) {
-    try {
-      await pipeline(got.stream(url), fs.createWriteStream(dest))
-    } catch (e) {
-      console.error(e)
-      await fail(`Failed to download file from url: ${url}. Error: ${e}`)
+module.exports = class OtpRunner {
+  constructor (manifest) {
+    this.log = SimpleNodeLogger.createSimpleLogger(manifest.otpRunnerLogFile)
+    this.downloadTasks = []
+    this.manifest = manifest
+    this.status = {
+      error: false,
+      graphBuilt: false,
+      graphUploaded: false,
+      serverStarted: false,
+      message: 'Inintializing...',
+      numFilesDownloaded: 0,
+      pctProgress: 0,
+      totalFilesToDownload: 0
     }
   }
-  await updateDownloadStatus(url)
-}
 
-/**
- * Downloads a file by executing the aws s3 command if it doesn't already exist.
- * Updates the status after each download.
- *
- * @param  {string} dest The path to save the downloaded file to
- * @param  {string} url  The url to download the file from
- */
-async function downloadFileFromS3IfNeeded ({ dest, url }) {
-  if (!(await fs.pathExists(dest))) {
-    try {
-      await execa('aws', ['s3', 'cp', url, dest])
-    } catch (e) {
-      console.error(e)
-      await fail(`Failed to download file from s3: ${url}. Error: ${e}`)
+  async fail (message) {
+    this.log.error(message)
+    this.status.error = true
+    this.status.message = message
+    await Promise.all([
+      this.uploadOtpRunnerLogs(),
+      this.updateStatus()
+    ])
+    throw new Error(message)
+  }
+
+  /**
+   * Updates the status file with the overall progress.
+   *
+   * @param  {string} [message]     If provided, a new message to update the
+   *  status with before writing to file.
+   * @param  {number} [pctProgress] If provided, a new percent progress to set
+   */
+  async updateStatus (message, pctProgress) {
+    if (message) {
+      this.log.info(message)
+      this.status.message = message
     }
-  }
-  await updateDownloadStatus(url)
-}
-
-function addDownloadTask ({ dest, url }) {
-  status.totalFilesToDownload++
-  if ((new URL(url)).protocol === 's3') {
-    downloadTasks.push(downloadFileFromS3IfNeeded({ dest, url }))
-  } else {
-    downloadTasks.push(downloadFileFromUrlIfNeeded({ dest, url }))
-  }
-}
-
-/**
- * Validate the manifest to make sure all of the necessary items are configured
- * for the actions that need to be taken.
- */
-async function validateManifest () {
-  // first validate using the manifest's JSON schema. This will also add in all
-  // of the default values to the manifest variable
-  const ajv = new Ajv({ allErrors: true, useDefaults: true })
-  const validator = ajv.compile(manifestJsonSchema)
-  const isValid = validator(manifest)
-  if (!isValid) {
-    await fail(ajv.errorsText(validator.errors))
-  }
-
-  // if build is set to true, then gtfsAndOsmUrls needs to be defined
-  if (manifest.buildGraph && !manifest.gtfsAndOsmUrls) {
-    await fail('gtfsUrls or osmUrls must be populated for graph build')
-  }
-
-  // if build is set to true, then the graphObjUrl must be an s3 url
-  if (
-    manifest.uploadGraph &&
-    (new URL(manifest.graphObjUrl).protocol !== 's3')
-  ) {
-    await fail('graphObjUrl must be an s3 url in order to upload graph.obj file')
-  }
-
-  // if build is set to false, then the graphObjUrl must be defined
-  if (!manifest.buildGraph && !manifest.graphObjUrl) {
-    await fail('graphObjUrl must be defined in run-server-only mode')
-  }
-}
-
-async function waitOneSecond () {
-  return new Promise((resolve, reject) => setTimeout(resolve, 1000))
-}
-
-/**
- * Executes an OTP command and tracks the progress by reading the output from
- * the OTP process.
- *
- * @param  {string} command Must be either `build` or `server`
- */
-async function runOtpCommand (command) {
-  if (!['build', 'server'].includes(command)) {
-    await fail(`Unsupported OTP command: ${command}`)
-  }
-
-  const isBuild = command === 'build'
-
-  // prepare execa options. Create a combined stdout and stderr output stream
-  // via setting the all flag to true.
-  const execaOptions = {
-    all: true
-  }
-
-  // Use potentially all available memory minus 2GB for the OS, but use a
-  // minimum of 1.5GB to run OTP.
-  const memoryToUse = Math.max(
-    Math.round(os.totalmem() / 1000 - 2097152),
-    1500000
-  )
-  const cmd = 'java'
-  const args = [
-    '-jar',
-    `-Xmx${memoryToUse}k`,
-    manifest.jarFile,
-    `--${command}`
-  ]
-  if (isBuild) {
-    args.push(path.join(manifest.graphsFolder, manifest.routerName))
-  } else {
-    args.push('--graphs')
-    args.push(manifest.graphsFolder)
-    args.push('--router')
-    args.push(manifest.routerName)
-  }
-
-  if (isBuild) {
-    // in build mode, use execa which simplifies a few things
-    const subprocess = execa(cmd, args, execaOptions)
-
-    // keep the last 100 logs to stdout/stderr in memory
-    const last100Logs = new CircularBuffer(100)
-
-    // Pipe all output to a logfile
-    subprocess.all.pipe(fs.createWriteStream(manifest.buildLogFile))
-    // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer.
-    subprocess.all.on('data', (data) => {
-      const lastMessage = data.toString().trim()
-      if (lastMessage !== '') {
-        last100Logs.push(lastMessage)
-      }
-    })
-
-    // Check on OTP as it starts up. Wait until graph building is complete. Update
-    // the status as graph build progresses.
-    while (subprocess.exitCode === null) {
-      await waitOneSecond()
-      // Update status with the latest message from the OTP logs
-      const lastLog = last100Logs.size() > 1
-        ? last100Logs
-            .get(last100Logs.size() - 1) // get the most recent entry
-            .replace(/^\d\d\:\d\d\:.*\(.*\)\s*/, '') // strip java timestamp and class
-            .substring(0, 60)
-        : ''
-      await updateStatus(`Building graph... ${lastLog !== '' ? ` (${lastLog})` : ''}`)
+    if (pctProgress) {
+      this.status.pctProgress = pctProgress
     }
-
-    // OTP exited, check if it was successful and do something if not
-    if (subprocess.exitCode > 0) {
-      console.error(last100Logs.toarray().join('\n'))
-      // immediately upload logs
-      await uploadBuildLogs()
-      await fail('Build graph failed! Please see logs.')
-    }
-  } else {
-    // if running as a server, use native child_process library instead of
-    // execa because it does not seem possible to keep writing output to logs
-    // while running detached processes with execa.
-    const out = fs.openSync(manifest.serverLogFile, 'w')
-    const otpServerProcess = spawn(
-      cmd,
-      args,
-      { detached: true, stdio: [ 'ignore', out, out ] }
+    await fs.writeFile(
+      (this.manifest && this.manifest.statusFileLocation)
+        ? this.manifest.statusFileLocation
+        : './status.json',
+      JSON.stringify(this.status)
     )
-    otpServerProcess.unref()
-    await updateStatus('Starting OTP server...')
-    console.log(`${cmd} ${args.join(' ')} running as pid ${otpServerProcess.pid}`)
+  }
 
-    let foundSuccessfulServerStartMessage = false
-    let graphRead = false
-    const serverStartTime = (new Date()).getTime()
-    while (!foundSuccessfulServerStartMessage || !graphRead) {
-      // Make sure server process is still running
-      if (otpServerProcess.exitCode !== null) {
-        console.error(await fs.readFile(manifest.serverLogFile, { encoding: 'UTF-8' }))
-        await uploadServerLogs()
-        await fail(`Server failed to start and exited with code ${otpServerProcess.exitCode}`)
-      }
+  async updateDownloadStatus (urlDownloaded) {
+    this.status.numFilesDownloaded++
+    await this.updateStatus(
+      `Downloaded ${urlDownloaded} (${this.status.numFilesDownloaded} / ${this.status.totalFilesToDownload} files)`
+    )
+  }
 
-      // wait one second before reading the logs
-      await waitOneSecond()
-
-      // read logs and check if the graph was read and the server started
-      const data = await fs.readFile(manifest.serverLogFile, { encoding: 'UTF-8' })
-      // check for server startup
-      if (data.includes('Grizzly server running')) {
-        foundSuccessfulServerStartMessage = true
-      }
-      // make sure the graph was read
-      if (data.includes('Main graph read.')) {
-        graphRead = true
-      }
-
-      // Fail this script if it has taken took long for the server to startup
-      if ((new Date()).getTime() - serverStartTime > manifest.serverStartupTimeoutSeconds * 1000) {
-        // Server startup timeout occurred! Kill the process, upload logs if
-        // needed and fail.
-        otpServerProcess.kill()
-        await uploadServerLogs()
-        await fail(`Server took longer than ${manifest.serverStartupTimeoutSeconds} seconds to start!`)
+  /**
+   * Downloads a file using a sreaming API if it doesn't already exist. Updates
+   * the status after each download.
+   *
+   * @param  {string} dest The path to save the downloaded file to
+   * @param  {string} url  The url to download the file from
+   */
+  async downloadFileFromUrlIfNeeded ({ dest, url }) {
+    if (!(await fs.pathExists(dest))) {
+      try {
+        await pipeline(got.stream(url), fs.createWriteStream(dest))
+      } catch (e) {
+        this.log.error(e)
+        await this.fail(`Failed to download file from url: ${url}. Error: ${e}`)
       }
     }
-
-    await updateStatus('Server successfully started!', 100)
+    await this.updateDownloadStatus(url)
   }
-}
 
-async function uploadBuildLogs () {
-  // TODO
-}
-
-async function uploadGraphObj () {
-  // TODO
-}
-
-async function createAndUploadBundle () {
-  // TODO
-}
-
-async function uploadServerLogs () {
-  // TODO
-}
-
-async function main () {
-  // read json manifest file
-  if (!(await fs.pathExists('manifest.json'))) {
-    await fail('manifest.json file does not exist!')
+  /**
+   * Downloads a file by executing the aws s3 command if it doesn't already exist.
+   * Updates the status after each download.
+   *
+   * @param  {string} dest The path to save the downloaded file to
+   * @param  {string} url  The url to download the file from
+   */
+  async downloadFileFromS3IfNeeded ({ dest, url }) {
+    if (!(await fs.pathExists(dest))) {
+      try {
+        await execa('aws', ['s3', 'cp', url, dest])
+      } catch (e) {
+        this.log.error(e)
+        await this.fail(`Failed to download file from s3: ${url}. Error: ${e}`)
+      }
+    }
+    await this.updateDownloadStatus(url)
   }
-  manifest = require('./manifest.json')
 
-  await validateManifest()
+  addDownloadTask ({ dest, url }) {
+    this.status.totalFilesToDownload++
+    if ((new URL(url)).protocol === 's3:') {
+      this.downloadTasks.push(this.downloadFileFromS3IfNeeded({ dest, url }))
+    } else {
+      this.downloadTasks.push(this.downloadFileFromUrlIfNeeded({ dest, url }))
+    }
+  }
 
-  // ensure certain directories exist
-  await fs.mkdirp(path.join(manifest.graphsFolder, manifest.routerName))
+  /**
+   * Validate the manifest to make sure all of the necessary items are configured
+   * for the actions that need to be taken.
+   */
+  async validateManifest () {
+    // first validate using the manifest's JSON schema. This will also add in all
+    // of the default values to the manifest variable
+    const ajv = new Ajv({ allErrors: true, useDefaults: true })
+    const validator = ajv.compile(manifestJsonSchema)
+    const isValid = validator(this.manifest)
+    if (!isValid) {
+      await this.fail(ajv.errorsText(validator.errors))
+    }
 
-  // add task to download OTP jar
-  addDownloadTask({
-    dest: manifest.jarFile,
-    url: manifest.jarUrl
-  })
+    // accumulate all other errors and return them all at once at the end
+    const errors = []
 
-  if (manifest.buildGraph) {
-    // add tasks to download GTFS and OSM files
-    manifest.gtfsAndOsmUrls.forEach(url => {
-      const splitUrl = url.split('/')
-      addDownloadTask({
-        dest: path.join(
-          manifest.graphsFolder,
-          manifest.routerName,
-          splitUrl[splitUrl.length - 1]
-        ),
-        url
+    // if build is set to true, then gtfsAndOsmUrls needs to be defined
+    if (this.manifest.buildGraph && !this.manifest.gtfsAndOsmUrls) {
+      errors.push('gtfsUrls or osmUrls must be populated for graph build')
+    }
+
+    // if build is set to true, then the graphObjUrl must be an s3 url
+    if (
+      this.manifest.uploadGraph &&
+      (
+        !this.manifest.graphObjUrl ||
+          (new URL(this.manifest.graphObjUrl).protocol !== 's3:')
+      )
+    ) {
+      errors.push('graphObjUrl must be an s3 url in order to upload graph.obj file')
+    }
+
+    // if build is set to false, then the graphObjUrl must be defined
+    if (!this.manifest.buildGraph && !this.manifest.graphObjUrl) {
+      errors.push('graphObjUrl must be defined in run-server-only mode')
+    }
+
+    // make sure the s3UploadBucket is defined if some uploads are supposed to
+    // happen
+    if (!this.manifest.s3UploadBucket) {
+      const uploads = [
+        'uploadGraphBuildLogs',
+        'uploadGraphBuildReport',
+        'uploadOtpRunnerLogs',
+        'uploadServerStartupLogs'
+      ]
+      uploads.forEach(upload => {
+        if (this.manifest[upload]) {
+          errors.push(`s3UploadBucket must be defined if \`${upload}\` is set to true`)
+          // immediately set uploadOtpRunnerLogs to false so it doesn't get
+          // activated by the fail method
+          if (upload === 'uploadOtpRunnerLogs') {
+            this.manifest.uploadOtpRunnerLogs = false
+          }
+        }
       })
-    })
-  } else if (manifest.runServer) {
-    // manifest says to run the server without building a graph. Therefore,
-    // download a graph.obj file.
-    addDownloadTask({
-      dest: path.join(manifest.graphsFolder, manifest.routerName, 'graph.obj'),
-      url: manifest.graphObjUrl
-    })
-  }
-
-  // download files asynchronously
-  await updateStatus(`Downloading ${status.totalFilesToDownload} files...`, 10)
-  try {
-    await Promise.all(downloadTasks)
-  } catch (e) {
-    fail(e)
-  }
-
-  // Create an array of tasks that can be ran asynchronously after graph build
-  // if that occurs. This allows an OTP server to be started right away without
-  // having to wait for other tasks that need to occur after graph builds.
-  let postBuildTasks = []
-
-  // build graph if needed
-  if (manifest.buildGraph) {
-    // write build-config.json file if contents are supplied in manifest
-    if (manifest.buildConfigJSON) {
-      await fs.writeFile(
-        path.join(graphsFolder, routerName, 'build-config.json'),
-        manifest.buildConfigJSON
-      )
     }
 
-    // build graph
-    await updateStatus('Building graph', manifest.runServer ? 30 : 50)
-    await runOtpCommand('build')
-    await updateStatus('Graph built successfully!', manifest.runServer ? 70 : 90)
+    // finally, fail with errors if there were any
+    if (errors.length > 0) {
+      await this.fail(`The following errors were found in the manifest.json file:
 
-    // upload build logs if needed
-    postBuildTasks.push(uploadBuildLogs)
-
-    // upload graph.obj if needed
-    postBuildTasks.push(uploadGraphObj)
-
-    // create and upload bundle if needed
-    postBuildTasks.push(createAndUploadBundle)
-  }
-
-  // start server if needed
-  if (manifest.runServer) {
-    // write build-config.json file if contents are supplied in manifest
-    if (manifest.routerConfigJSON) {
-      await fs.writeFile(
-        path.join(graphsFolder, routerName, 'router-config.json'),
-        manifest.routerConfigJSON
-      )
+      ${errors.join('\n')}`)
     }
 
-    // run server
-    postBuildTasks = [runOtpCommand('server')].concat(postBuildTasks)
+    // if this point is reached, the manfiest.json file is valid!
   }
 
-  await Promise.all(postBuildTasks)
+  async waitOneSecond () {
+    return new Promise((resolve, reject) => setTimeout(resolve, 1000))
+  }
 
-  // If runServer is true, the execa subprocess hangs for unkown reasons that
-  // seem to be related to reading the stdout/stderr stream. Therefore, manually
-  // exit this script at this point.
-  process.exit(0)
+  /**
+   * Executes an OTP command and tracks the progress by reading the output from
+   * the OTP process.
+   *
+   * @param  {string} command Must be either `build` or `server`
+   */
+  async runOtpCommand (command) {
+    if (!['build', 'server'].includes(command)) {
+      await this.fail(`Unsupported OTP command: ${command}`)
+    }
+
+    const isBuild = command === 'build'
+
+    // prepare execa options. Create a combined stdout and stderr output stream
+    // via setting the all flag to true.
+    const execaOptions = {
+      all: true
+    }
+
+    // Use potentially all available memory minus 2GB for the OS, but use a
+    // minimum of 1.5GB to run OTP.
+    const memoryToUse = Math.max(
+      Math.round(os.totalmem() / 1000 - 2097152),
+      1500000
+    )
+    const cmd = 'java'
+    const args = [
+      '-jar',
+      `-Xmx${memoryToUse}k`,
+      this.manifest.jarFile,
+      `--${command}`
+    ]
+    if (isBuild) {
+      args.push(path.join(this.manifest.graphsFolder, this.manifest.routerName))
+    } else {
+      args.push('--graphs')
+      args.push(this.manifest.graphsFolder)
+      args.push('--router')
+      args.push(this.manifest.routerName)
+    }
+
+    if (isBuild) {
+      // in build mode, use execa which simplifies a few things
+      const subprocess = execa(cmd, args, execaOptions)
+
+      // keep the last 100 logs to stdout/stderr in memory
+      const last100Logs = new CircularBuffer(100)
+
+      // Pipe all output to a logfile
+      subprocess.all.pipe(fs.createWriteStream(this.manifest.buildLogFile))
+      // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer.
+      subprocess.all.on('data', (data) => {
+        const lastMessage = data.toString().trim()
+        if (lastMessage !== '') {
+          last100Logs.push(lastMessage)
+        }
+      })
+
+      // Check on OTP as it starts up. Wait until graph building is complete. Update
+      // the status as graph build progresses.
+      while (subprocess.exitCode === null) {
+        await this.waitOneSecond()
+        // Update status with the latest message from the OTP logs
+        const lastLog = last100Logs.size() > 1
+          ? (
+            last100Logs
+              .get(last100Logs.size() - 1) // get the most recent entry
+              .replace(/^\d\d:\d\d:.*\(.*\)\s*/, '') // strip java timestamp and class
+              .substring(0, 60)
+          )
+          : ''
+        await this.updateStatus(`Building graph... ${lastLog !== '' ? ` (${lastLog})` : ''}`)
+      }
+
+      // OTP exited, check if it was successful and do something if not
+      if (subprocess.exitCode > 0) {
+        this.log.error(last100Logs.toarray().join('\n'))
+        // immediately upload logs
+        await this.uploadBuildLogs()
+        await this.fail('Build graph failed! Please see logs.')
+      }
+      this.status.graphBuilt = true
+    } else {
+      // if running as a server, use native child_process library instead of
+      // execa because it does not seem possible to keep writing output to logs
+      // while running detached processes with execa.
+      const out = fs.openSync(this.manifest.serverLogFile, 'w')
+      const otpServerProcess = spawn(
+        cmd,
+        args,
+        { detached: true, stdio: [ 'ignore', out, out ] }
+      )
+      otpServerProcess.unref()
+      await this.updateStatus('Starting OTP server...')
+      this.log.info(`${cmd} ${args.join(' ')} running as pid ${otpServerProcess.pid}`)
+
+      let foundSuccessfulServerStartMessage = false
+      let graphRead = false
+      const serverStartTime = (new Date()).getTime()
+      while (!foundSuccessfulServerStartMessage || !graphRead) {
+        // Make sure server process is still running
+        if (otpServerProcess.exitCode !== null) {
+          this.log.error(await fs.readFile(this.manifest.serverLogFile, { encoding: 'UTF-8' }))
+          await this.uploadServerLogs()
+          await this.fail(`Server failed to start and exited with code ${otpServerProcess.exitCode}`)
+        }
+
+        // wait one second before reading the logs
+        await this.waitOneSecond()
+
+        // read logs and check if the graph was read and the server started
+        const data = await fs.readFile(this.manifest.serverLogFile, { encoding: 'UTF-8' })
+        // check for server startup
+        if (data.includes('Grizzly server running')) {
+          foundSuccessfulServerStartMessage = true
+        }
+        // make sure the graph was read
+        if (data.includes('Main graph read.')) {
+          graphRead = true
+        }
+
+        // Fail this script if it has taken took long for the server to startup
+        if ((new Date()).getTime() - serverStartTime > this.manifest.serverStartupTimeoutSeconds * 1000) {
+          // Server startup timeout occurred! Kill the process, upload logs if
+          // needed and fail.
+          otpServerProcess.kill()
+          await this.uploadServerLogs()
+          await this.fail(`Server took longer than ${this.manifest.serverStartupTimeoutSeconds} seconds to start!`)
+        }
+      }
+
+      await this.uploadServerLogs()
+      this.status.serverStarted = true
+      await this.updateStatus('Server successfully started!', 100)
+    }
+  }
+
+  /**
+   * Uploads a file to AWS S3 using the command line. Returns true if successful.
+   */
+  async uploadFileToS3 ({ filePath, s3Path }) {
+    try {
+      this.log.info(`uploading ${filePath} to ${s3Path}`)
+      await execa('aws', ['s3', 'cp', filePath, s3Path])
+      this.log.info(`Successfully uploaded ${filePath} to ${s3Path}!`)
+      return true
+    } catch (e) {
+      this.log.error(`Failed to upload ${filePath} to ${s3Path}! See error:`)
+      this.log.error(e)
+      return false
+    }
+  }
+
+  /**
+   * If needed, will upload the graph build logs to s3
+   */
+  async uploadBuildLogs () {
+    if (this.manifest.uploadGraphBuildLogs) {
+      await this.uploadFileToS3({
+        filePath: this.manifest.buildLogFile,
+        s3Path: `${this.manifest.s3UploadBucket}/otp-build.log`
+      })
+    }
+  }
+
+  /**
+   * If needed will upload the graph object to s3.
+   *
+   * Note: if uploading the graph is set to true in the manifest, and uploading
+   * the graph failed, then the script will be failed.
+   */
+  async uploadGraphObj () {
+    if (this.manifest.uploadGraph) {
+      if (
+        await this.uploadFileToS3({
+          filePath: path.join(
+            this.manifest.graphsFolder,
+            this.manifest.routerName,
+            'graph.obj'
+          ),
+          s3Path: this.manifest.graphObjUrl
+        })
+      ) {
+        // successfully uploaded graph!
+        this.status.graphUploaded = true
+        await this.updateStatus('Graph uploaded!', this.manifest.runServer ? 80 : 100)
+      } else {
+        await this.fail('Failed to upload graph!')
+      }
+    }
+  }
+
+  async createAndUploadBundle () {
+    // TODO
+  }
+
+  /**
+   * If needed, will upload the server startup logs to s3
+   */
+  async uploadServerLogs () {
+    if (this.manifest.uploadServerStartupLogs) {
+      await this.uploadFileToS3({
+        filePath: this.manifest.serverLogFile,
+        s3Path: `${this.manifest.s3UploadBucket}/otp-server.log`
+      })
+    }
+  }
+
+  /**
+   * If needed and if the report was generated, zips up the graph build report and
+   * then uploads.
+   */
+  async uploadGraphBuildReport () {
+    if (this.manifest.uploadGraphBuildReport) {
+      const reportDir = path.join(
+        this.manifest.graphsFolder,
+        this.manifest.routerName,
+        'report'
+      )
+      if (!(await fs.pathExists(reportDir))) {
+        this.log.warn('Upload of graph build report requested, but report not found!')
+        return
+      }
+      try {
+        await execa(
+          'zip',
+          ['-r', 'report.zip', 'report'],
+          { cwd: path.join(this.manifest.graphsFolder, this.manifest.routerName) }
+        )
+      } catch (e) {
+        this.log.error('Failed to zip up graph build report! See error:')
+        this.log.error(e)
+        return
+      }
+      await this.uploadFileToS3({
+        filePath: path.join(
+          this.manifest.graphsFolder,
+          this.manifest.routerName,
+          'report.zip'
+        ),
+        s3Path: `${this.manifest.s3UploadBucket}/graph-build-report.zip`
+      })
+    }
+  }
+
+  /**
+   * If needed, will upload the otp-runner logs to s3
+   */
+  async uploadOtpRunnerLogs () {
+    if (this.manifest && this.manifest.uploadOtpRunnerLogs) {
+      await this.uploadFileToS3({
+        filePath: this.manifest.otpRunnerLogFile,
+        s3Path: `${this.manifest.s3UploadBucket}/otp-runner.log`
+      })
+    }
+  }
+
+  async run () {
+    await this.validateManifest()
+
+    // ensure certain directories exist
+    await fs.mkdirp(
+      path.join(this.manifest.graphsFolder, this.manifest.routerName)
+    )
+
+    // add task to download OTP jar
+    this.addDownloadTask({
+      dest: this.manifest.jarFile,
+      url: this.manifest.jarUrl
+    })
+
+    if (this.manifest.buildGraph) {
+      // add tasks to download GTFS and OSM files
+      this.manifest.gtfsAndOsmUrls.forEach(url => {
+        const splitUrl = url.split('/')
+        this.addDownloadTask({
+          dest: path.join(
+            this.manifest.graphsFolder,
+            this.manifest.routerName,
+            splitUrl[splitUrl.length - 1]
+          ),
+          url
+        })
+      })
+    } else if (this.manifest.runServer) {
+      // this.manifest says to run the server without building a graph. Therefore,
+      // download a graph.obj file.
+      this.addDownloadTask({
+        dest: path.join(this.manifest.graphsFolder, this.manifest.routerName, 'graph.obj'),
+        url: this.manifest.graphObjUrl
+      })
+    }
+
+    // download files asynchronously
+    await this.updateStatus(`Downloading ${this.status.totalFilesToDownload} files...`, 10)
+    await Promise.all(this.downloadTasks)
+
+    // Create an array of tasks that can be ran asynchronously after graph build
+    // if that occurs. This allows an OTP server to be started right away without
+    // having to wait for other tasks that need to occur after graph builds.
+    let postBuildTasks = []
+
+    // build graph if needed
+    if (this.manifest.buildGraph) {
+      // write build-config.json file if contents are supplied in this.manifest
+      if (this.manifest.buildConfigJSON) {
+        await fs.writeFile(
+          path.join(this.manifest.graphsFolder, this.manifest.routerName, 'build-config.json'),
+          this.manifest.buildConfigJSON
+        )
+      }
+
+      // build graph
+      await this.updateStatus('Building graph', this.manifest.runServer ? 30 : 50)
+      await this.runOtpCommand('build')
+      await this.updateStatus('Graph built successfully!', this.manifest.runServer ? 70 : 90)
+
+      // add various follow-up tasks that can occur independently of the server
+      // startup
+      postBuildTasks.push(this.uploadGraphObj())
+      postBuildTasks.push(this.uploadBuildLogs())
+      postBuildTasks.push(this.createAndUploadBundle())
+      postBuildTasks.push(this.uploadGraphBuildReport())
+    }
+
+    // start server if needed
+    if (this.manifest.runServer) {
+      // write build-config.json file if contents are supplied in this.manifest
+      if (this.manifest.routerConfigJSON) {
+        await fs.writeFile(
+          path.join(this.manifest.graphsFolder, this.manifest.routerName, 'router-config.json'),
+          this.manifest.routerConfigJSON
+        )
+      }
+
+      // run server
+      postBuildTasks = [this.runOtpCommand('server')].concat(postBuildTasks)
+    }
+
+    await Promise.all(postBuildTasks)
+
+    await this.uploadOtpRunnerLogs()
+
+    // If runServer is true, the execa subprocess hangs for unkown reasons that
+    // seem to be related to reading the stdout/stderr stream. Therefore, manually
+    // exit this script at this point.
+    process.exit(0)
+  }
 }
-
-main()

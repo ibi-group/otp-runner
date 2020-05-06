@@ -1,0 +1,20 @@
+{
+  "buildConfigJSON": "{\"htmlAnnotations\": true}",
+  "buildGraph": true,
+  "buildLogFile": "./temp-test-files/otp-build.log",
+  "jarFile": "./temp-test-files/ok.jar",
+  "jarUrl": "s3://mock-download-bucket/ok.jar",
+  "graphObjUrl": "s3://mock-upload-bucket/graph.obj",
+  "graphsFolder": "./temp-test-files/",
+  "gtfsAndOsmUrls": [],
+  "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
+  "routerConfigJSON": "{\"timeout\": 4}",
+  "s3UploadBucket": "s3://mock-upload-bucket",
+  "serverLogFile": "./temp-test-files/otp-server.log",
+  "statusFileLocation": "./temp-test-files/ok-manifest.json",
+  "uploadGraphBuildLogs": true,
+  "uploadGraphBuildReport": true,
+  "uploadGraph": true,
+  "uploadOtpRunnerLogs": true,
+  "uploadServerStartupLogs": true
+}
