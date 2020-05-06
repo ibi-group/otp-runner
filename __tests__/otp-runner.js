@@ -165,7 +165,7 @@ describe('otp-runner', () => {
   })
 
   describe('successes', () => {
-    it.only('should build a graph and start a server', async () => {
+    it('should build a graph and start a server', async () => {
       // add to mocked commands to achieve desired return
 
       // simulate successful download of jar from s3
