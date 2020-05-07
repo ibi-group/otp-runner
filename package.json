@@ -14,7 +14,7 @@
     "cover": "yarn jest --coverage --coverage-paths index.js",
     "jest": "mastarm test --run-in-band",
     "lint": "mastarm lint *.js",
-    "start": "node bin/otp-runner.js manifest.json",
+    "start": "./bin/otp-runner.js manifest.json",
     "test": "yarn lint && yarn jest",
     "update-docs": "node update-docs.js"
   },
