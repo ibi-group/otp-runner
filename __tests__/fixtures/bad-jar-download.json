@@ -2,7 +2,7 @@
   "buildGraph": true,
   "buildLogFile": "./temp-test-files/otp-build.log",
   "jarFile": "./temp-test-files/failme.jar",
-  "jarUrl": "s3://mock-download-bucket/failme.jar",
+  "jarUrl": "s3://mock-bucket/failme.jar",
   "gtfsAndOsmUrls": [],
-  "statusFileLocation": "./temp-test-files/bad-jar-download.json"
+  "statusFileLocation": "./temp-test-files/status.json"
 }

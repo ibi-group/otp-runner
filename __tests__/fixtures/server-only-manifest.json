@@ -1,0 +1,15 @@
+{
+  "buildGraph": false,
+  "jarFile": "./temp-test-files/ok.jar",
+  "jarUrl": "s3://mock-bucket/ok.jar",
+  "graphObjUrl": "s3://mock-bucket/graph.obj",
+  "graphsFolder": "./temp-test-files/",
+  "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
+  "routerConfigJSON": "{\"timeout\": 4}",
+  "s3UploadBucket": "s3://mock-bucket",
+  "serverLogFile": "./temp-test-files/otp-server.log",
+  "serverStartupTimeoutSeconds": 2,
+  "statusFileLocation": "./temp-test-files/status.json",
+  "uploadOtpRunnerLogs": true,
+  "uploadServerStartupLogs": true
+}

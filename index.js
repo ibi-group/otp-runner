@@ -41,6 +41,8 @@ module.exports = class OtpRunner {
     this.log.error(message)
     this.status.error = true
     this.status.message = message
+    // wait 1 second for error logging to write to file
+    await this.waitOneSecond()
     await Promise.all([
       this.uploadOtpRunnerLogs(),
       this.updateStatus()
@@ -255,6 +257,10 @@ module.exports = class OtpRunner {
           last100Logs.push(lastMessage)
         }
       })
+
+      // wait 1 second prior to entering loop. This is mainly just to let the
+      // subprocess stream logging catch up when testing.
+      await this.waitOneSecond()
 
       // Check on OTP as it starts up. Wait until graph building is complete. Update
       // the status as graph build progresses.
