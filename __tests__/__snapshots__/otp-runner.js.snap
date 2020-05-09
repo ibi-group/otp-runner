@@ -7,7 +7,7 @@ Object {
   "graphUploaded": false,
   "message": "Server failed to start and exited with code 1",
   "numFilesDownloaded": 2,
-  "pctProgress": 10,
+  "pctProgress": 40,
   "serverStarted": false,
   "totalFilesToDownload": 2,
 }
@@ -24,7 +24,7 @@ Object {
   "graphUploaded": false,
   "message": "Server took longer than 2 seconds to start!",
   "numFilesDownloaded": 2,
-  "pctProgress": 10,
+  "pctProgress": 40,
   "serverStarted": false,
   "totalFilesToDownload": 2,
 }
@@ -41,7 +41,7 @@ Object {
   "graphUploaded": false,
   "message": "Server took longer than 2 seconds to start!",
   "numFilesDownloaded": 2,
-  "pctProgress": 10,
+  "pctProgress": 40,
   "serverStarted": false,
   "totalFilesToDownload": 2,
 }
@@ -118,12 +118,12 @@ Object {
   "graphUploaded": false,
   "message": "The following errors were found in the manifest.json file:
 
-      gtfsUrls or osmUrls must be populated for graph build
-graphObjUrl must be an s3 url in order to upload graph.obj file
-s3UploadBucket must be defined if \`uploadGraphBuildLogs\` is set to true
-s3UploadBucket must be defined if \`uploadGraphBuildReport\` is set to true
-s3UploadBucket must be defined if \`uploadOtpRunnerLogs\` is set to true
-s3UploadBucket must be defined if \`uploadServerStartupLogs\` is set to true",
+      \`gtfsAndOsmUrls\` must be populated for graph build
+\`graphObjUrl\` must be an s3 url in order to upload graph.obj file
+\`s3UploadBucket\` must be defined if \`uploadGraphBuildLogs\` is set to true
+\`s3UploadBucket\` must be defined if \`uploadGraphBuildReport\` is set to true
+\`s3UploadBucket\` must be defined if \`uploadOtpRunnerLogs\` is set to true
+\`s3UploadBucket\` must be defined if \`uploadServerStartupLogs\` is set to true",
   "numFilesDownloaded": 0,
   "pctProgress": 0,
   "serverStarted": false,

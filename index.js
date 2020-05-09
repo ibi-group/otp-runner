@@ -73,10 +73,36 @@ module.exports = class OtpRunner {
     )
   }
 
+  /**
+   * Updates the overall status after each file is downloaded.
+   */
   async updateDownloadStatus (urlDownloaded) {
+    // increment number of files downloaded and create string component for the
+    // progress.
     this.status.numFilesDownloaded++
+    const { numFilesDownloaded, totalFilesToDownload } = this.status
+    const progressString = `(${numFilesDownloaded} / ${totalFilesToDownload} files)`
+
+    // calculate the contribution to the overall otp-runner progress based on
+    // what is in the manifest
+    let downloadProgressComponent
+    if (this.manifest.buildGraph && this.manifest.runServer) {
+      // building graph and starting server
+      // goes from 10% to 30%
+      downloadProgressComponent = 20
+    } else if (this.manifest.buildGraph) {
+      // just building graph
+      // goes from 10% to 50%
+      downloadProgressComponent = 40
+    } else {
+      // just starting server
+      // goes from 10% to 40%
+      downloadProgressComponent = 30
+    }
     await this.updateStatus(
-      `Downloaded ${urlDownloaded} (${this.status.numFilesDownloaded} / ${this.status.totalFilesToDownload} files)`
+      `Downloaded ${urlDownloaded} ${progressString}`,
+      // update overall progress given whether
+      10 + downloadProgressComponent * numFilesDownloaded / totalFilesToDownload
     )
   }
 
@@ -144,9 +170,13 @@ module.exports = class OtpRunner {
     // accumulate all other errors and return them all at once at the end
     const errors = []
 
+    if (!this.manifest.buildGraph && !this.manifest.runServer) {
+      errors.push('At least one of `buildGraph` or `runServer` must be set')
+    }
+
     // if build is set to true, then gtfsAndOsmUrls needs to be defined
     if (this.manifest.buildGraph && !this.manifest.gtfsAndOsmUrls) {
-      errors.push('gtfsUrls or osmUrls must be populated for graph build')
+      errors.push('`gtfsAndOsmUrls` must be populated for graph build')
     }
 
     // if build is set to true, then the graphObjUrl must be an s3 url
@@ -157,12 +187,12 @@ module.exports = class OtpRunner {
           (new URL(this.manifest.graphObjUrl).protocol !== 's3:')
       )
     ) {
-      errors.push('graphObjUrl must be an s3 url in order to upload graph.obj file')
+      errors.push('`graphObjUrl` must be an s3 url in order to upload graph.obj file')
     }
 
     // if build is set to false, then the graphObjUrl must be defined
     if (!this.manifest.buildGraph && !this.manifest.graphObjUrl) {
-      errors.push('graphObjUrl must be defined in run-server-only mode')
+      errors.push('`graphObjUrl` must be defined in run-server-only mode')
     }
 
     // make sure the s3UploadBucket is defined if some uploads are supposed to
@@ -176,7 +206,7 @@ module.exports = class OtpRunner {
       ]
       uploads.forEach(upload => {
         if (this.manifest[upload]) {
-          errors.push(`s3UploadBucket must be defined if \`${upload}\` is set to true`)
+          errors.push(`\`s3UploadBucket\` must be defined if \`${upload}\` is set to true`)
           // immediately set uploadOtpRunnerLogs to false so it doesn't get
           // activated by the fail method
           if (upload === 'uploadOtpRunnerLogs') {
@@ -531,6 +561,10 @@ module.exports = class OtpRunner {
 
     // start server if needed
     if (this.manifest.runServer) {
+      await this.updateStatus(
+        'Starting OTP server',
+        this.manifest.buildGraph ? 70 : 40
+      )
       // write build-config.json file if contents are supplied in this.manifest
       if (this.manifest.routerConfigJSON) {
         await fs.writeFile(
