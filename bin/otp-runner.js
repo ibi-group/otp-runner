@@ -14,7 +14,7 @@ async function main () {
       throw new Error(`manifest.json file does not exist at path: ${pathToManifestJson}!`)
     }
     const runner = new OtpRunner(
-      await fs.readFile(path.resolve(pathToManifestJson))
+      require(path.resolve(pathToManifestJson))
     )
     await runner.run()
   } else {
