@@ -22,7 +22,9 @@ const pipeline = promisify(stream.pipeline)
 
 module.exports = class OtpRunner {
   constructor (manifest) {
-    this.log = SimpleNodeLogger.createSimpleLogger(manifest.otpRunnerLogFile)
+    this.log = SimpleNodeLogger.createSimpleLogger(
+      manifest.otpRunnerLogFile || './otp-runner.log'
+    )
     this.downloadTasks = []
     this.manifest = manifest
     this.status = {
@@ -35,6 +37,10 @@ module.exports = class OtpRunner {
       pctProgress: 0,
       totalFilesToDownload: 0
     }
+    // print some startup messages
+    this.log.info('otp-runner has started!')
+    this.log.info('Received a manifest:')
+    this.log.info(JSON.stringify(manifest, null, 2))
   }
 
   async fail (message) {
