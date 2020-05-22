@@ -401,7 +401,7 @@ module.exports = class OtpRunner {
    */
   async getLogUploadPrefix () {
     if (!this.manifest.prefixLogUploadsWithInstanceId) return ''
-    return `${this.getInstanceId()}-`
+    return `${await this.getInstanceId()}-`
   }
 
   /**

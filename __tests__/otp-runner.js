@@ -2,6 +2,7 @@ const { Readable } = require('stream')
 
 const fs = require('fs-extra')
 const isEqual = require('lodash.isequal')
+const nock = require('nock')
 
 // mock execa and create a registry of functions to call in case the arguments
 // match.
@@ -435,20 +436,27 @@ describe('otp-runner', () => {
         serverStarts: true
       })
 
+      const mockInstanceId = 'i-123456'
+
       // simulate s3 upload of server logs
       mockS3Transfer(
         './temp-test-files/otp-server.log',
-        's3://mock-bucket/otp-server.log'
+        `s3://mock-bucket/${mockInstanceId}-otp-server.log`
       )
 
       // simulate s3 upload of otp-runner.log
       mockS3Transfer(
         './temp-test-files/otp-runner.log',
-        's3://mock-bucket/otp-runner.log'
+        `s3://mock-bucket/${mockInstanceId}-otp-runner.log`
       )
 
+      // simulate aws ec2 instance ID http request
+      nock('http://169.254.169.254')
+        .get('/latest/meta-data/instance-id')
+        .reply(200, mockInstanceId)
+
       // run otp-runner
-      await runOtpRunner('./fixtures/server-only-manifest.json')
+      await runOtpRunner('./fixtures/server-only-manifest-with-log-prefixing.json')
 
       // verify that router config json was written
       expect(
@@ -456,9 +464,9 @@ describe('otp-runner', () => {
       ).toMatchSnapshot()
 
       // verify that various files were mock-uploaded to s3
-      await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
+      await expect(s3uploads[`s3://mock-bucket/${mockInstanceId}-otp-server.log`]).toMatchSnapshot()
       // don't snapshot otp-runner due to differing timestamps
-      await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('INFO  Server successfully started!')
+      await expect(s3uploads[`s3://mock-bucket/${mockInstanceId}-otp-runner.log`]).toContain('INFO  Server successfully started!')
     })
   })
 
