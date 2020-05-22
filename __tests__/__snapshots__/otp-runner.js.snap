@@ -1,5 +1,31 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`otp-runner failures should fail if OTP server fails to read graph 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "An error occurred while trying to start the OTP Server!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 40,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if OTP server fails to read graph 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner failures should fail if OTP server fails to read graph 3`] = `
+"16:59:42.029 INFO (InputStreamGraphSource.java:177) Loading graph...
+16:59:42.493 ERROR (InputStreamGraphSource.java:181) Exception while loading graph 'default'.
+com.esotericsoftware.kryo.KryoException: Encountered unregistered class ID: 13994
+        at com.esotericsoftware.kryo.util.DefaultClassResolver.readClass(DefaultClassResolver.java:137) ~[otp-latest-ibi-dev:1.1]
+16:59:42.494 WARN (InputStreamGraphSource.java:114) Unable to load data for router 'default'.
+16:59:42.494 WARN (GraphService.java:185) Can't register router ID 'default', no graph.
+16:59:42.499 INFO (GrizzlyServer.java:72) Starting OTP Grizzly server on ports 8080 (HTTP) and 8081 (HTTPS) of interface 0.0.0.0
+16:59:45.811 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;
+
 exports[`otp-runner failures should fail if OTP server fails to start 1`] = `
 Object {
   "error": true,

@@ -238,145 +238,155 @@ module.exports = class OtpRunner {
     return new Promise((resolve, reject) => setTimeout(resolve, 1000))
   }
 
-  /**
-   * Executes an OTP command and tracks the progress by reading the output from
-   * the OTP process.
-   *
-   * @param  {string} command Must be either `build` or `server`
-   */
-  async runOtpCommand (command) {
-    if (!['build', 'server'].includes(command)) {
-      await this.fail(`Unsupported OTP command: ${command}`)
-    }
-
-    const isBuild = command === 'build'
-
-    // prepare execa options. Create a combined stdout and stderr output stream
-    // via setting the all flag to true.
-    const execaOptions = {
-      all: true
-    }
-
+  getBaseOTPArgs () {
     // Use potentially all available memory minus 2GB for the OS, but use a
     // minimum of 1.5GB to run OTP.
     const memoryToUse = Math.max(
       Math.round(os.totalmem() / 1000 - 2097152),
       1500000
     )
-    const cmd = 'java'
-    const args = [
+    return [
       '-jar',
       `-Xmx${memoryToUse}k`,
-      this.manifest.jarFile,
-      `--${command}`
+      this.manifest.jarFile
     ]
-    if (isBuild) {
-      args.push(path.join(this.manifest.graphsFolder, this.manifest.routerName))
-    } else {
-      args.push('--graphs')
-      args.push(this.manifest.graphsFolder)
-      args.push('--router')
-      args.push(this.manifest.routerName)
+  }
+
+  /**
+   * Builds a graph using OTP
+   */
+  async buildGraph () {
+    // in build mode, use execa which simplifies a few things
+    // The execa options argument creates a combined stdout and stderr output
+    // stream via setting the `all` flag to true.
+    const args = this.getBaseOTPArgs()
+    args.push('--build')
+    args.push(path.join(this.manifest.graphsFolder, this.manifest.routerName))
+    const subprocess = execa('java', args, { all: true })
+
+    // keep the last 100 logs to stdout/stderr in memory
+    const last100Logs = new CircularBuffer(100)
+
+    // Pipe all output to a logfile
+    subprocess.all.pipe(fs.createWriteStream(this.manifest.buildLogFile))
+    // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer.
+    subprocess.all.on('data', (data) => {
+      const lastMessage = data.toString().trim()
+      if (lastMessage !== '') {
+        last100Logs.push(lastMessage)
+      }
+    })
+
+    // wait 1 second prior to entering loop. This is mainly just to let the
+    // subprocess stream logging catch up when testing.
+    await this.waitOneSecond()
+
+    // Check on OTP as it starts up. Wait until graph building is complete. Update
+    // the status as graph build progresses.
+    while (subprocess.exitCode === null) {
+      await this.waitOneSecond()
+      // Update status with the latest message from the OTP logs
+      const lastLog = last100Logs.size() > 1
+        ? (
+          last100Logs
+            .get(last100Logs.size() - 1) // get the most recent entry
+            .replace(/^\d\d:\d\d:.*\(.*\)\s*/, '') // strip java timestamp and class
+            .substring(0, 60)
+        )
+        : ''
+      await this.updateStatus(`Building graph... ${lastLog !== '' ? ` (${lastLog})` : ''}`)
     }
 
-    if (isBuild) {
-      // in build mode, use execa which simplifies a few things
-      const subprocess = execa(cmd, args, execaOptions)
+    // OTP exited, check if it was successful and do something if not
+    if (subprocess.exitCode > 0) {
+      this.log.error(last100Logs.toarray().join('\n'))
+      // immediately upload logs
+      await this.uploadBuildLogs()
+      await this.fail('Build graph failed! Please see logs.')
+    }
+    this.status.graphBuilt = true
+  }
 
-      // keep the last 100 logs to stdout/stderr in memory
-      const last100Logs = new CircularBuffer(100)
+  /**
+   * Starts OTP as a server
+   */
+  async startServer () {
+    const args = this.getBaseOTPArgs()
+    args.push('--server')
+    args.push('--graphs')
+    args.push(this.manifest.graphsFolder)
+    args.push('--router')
+    args.push(this.manifest.routerName)
 
-      // Pipe all output to a logfile
-      subprocess.all.pipe(fs.createWriteStream(this.manifest.buildLogFile))
-      // Analyze the OTP stdout and stderr, storing logs into the CircularBuffer.
-      subprocess.all.on('data', (data) => {
-        const lastMessage = data.toString().trim()
-        if (lastMessage !== '') {
-          last100Logs.push(lastMessage)
-        }
-      })
+    // if running as a server, use native child_process library instead of
+    // execa because it does not seem possible to keep writing output to logs
+    // while running detached processes with execa.
+    const out = fs.openSync(this.manifest.serverLogFile, 'w')
+    const otpServerProcess = spawn(
+      'java',
+      args,
+      { detached: true, stdio: [ 'ignore', out, out ] }
+    )
+    otpServerProcess.unref()
+    await this.updateStatus('Starting OTP server...')
+    this.log.info(`java ${args.join(' ')} running as pid ${otpServerProcess.pid}`)
 
-      // wait 1 second prior to entering loop. This is mainly just to let the
-      // subprocess stream logging catch up when testing.
+    let foundSuccessfulServerStartMessage = false
+    let graphRead = false
+    const serverStartTime = (new Date()).getTime()
+    while (!foundSuccessfulServerStartMessage || !graphRead) {
+      // Make sure server process is still running
+      if (otpServerProcess.exitCode !== null) {
+        // Server process has exited!
+        this.log.error(
+          await fs.readFile(this.manifest.serverLogFile, { encoding: 'UTF-8' })
+        )
+        await this.uploadServerLogs()
+        await this.fail(`Server failed to start and exited with code ${otpServerProcess.exitCode}`)
+      }
+
+      // wait one second before reading the logs
       await this.waitOneSecond()
 
-      // Check on OTP as it starts up. Wait until graph building is complete. Update
-      // the status as graph build progresses.
-      while (subprocess.exitCode === null) {
-        await this.waitOneSecond()
-        // Update status with the latest message from the OTP logs
-        const lastLog = last100Logs.size() > 1
-          ? (
-            last100Logs
-              .get(last100Logs.size() - 1) // get the most recent entry
-              .replace(/^\d\d:\d\d:.*\(.*\)\s*/, '') // strip java timestamp and class
-              .substring(0, 60)
-          )
-          : ''
-        await this.updateStatus(`Building graph... ${lastLog !== '' ? ` (${lastLog})` : ''}`)
-      }
-
-      // OTP exited, check if it was successful and do something if not
-      if (subprocess.exitCode > 0) {
-        this.log.error(last100Logs.toarray().join('\n'))
-        // immediately upload logs
-        await this.uploadBuildLogs()
-        await this.fail('Build graph failed! Please see logs.')
-      }
-      this.status.graphBuilt = true
-    } else {
-      // if running as a server, use native child_process library instead of
-      // execa because it does not seem possible to keep writing output to logs
-      // while running detached processes with execa.
-      const out = fs.openSync(this.manifest.serverLogFile, 'w')
-      const otpServerProcess = spawn(
-        cmd,
-        args,
-        { detached: true, stdio: [ 'ignore', out, out ] }
+      // read logs and check if the graph was read and the server started
+      const data = await fs.readFile(
+        this.manifest.serverLogFile,
+        { encoding: 'UTF-8' }
       )
-      otpServerProcess.unref()
-      await this.updateStatus('Starting OTP server...')
-      this.log.info(`${cmd} ${args.join(' ')} running as pid ${otpServerProcess.pid}`)
-
-      let foundSuccessfulServerStartMessage = false
-      let graphRead = false
-      const serverStartTime = (new Date()).getTime()
-      while (!foundSuccessfulServerStartMessage || !graphRead) {
-        // Make sure server process is still running
-        if (otpServerProcess.exitCode !== null) {
-          this.log.error(await fs.readFile(this.manifest.serverLogFile, { encoding: 'UTF-8' }))
-          await this.uploadServerLogs()
-          await this.fail(`Server failed to start and exited with code ${otpServerProcess.exitCode}`)
-        }
-
-        // wait one second before reading the logs
-        await this.waitOneSecond()
-
-        // read logs and check if the graph was read and the server started
-        const data = await fs.readFile(this.manifest.serverLogFile, { encoding: 'UTF-8' })
-        // check for server startup
-        if (data.includes('Grizzly server running')) {
-          foundSuccessfulServerStartMessage = true
-        }
-        // make sure the graph was read
-        if (data.includes('Main graph read.')) {
-          graphRead = true
-        }
-
-        // Fail this script if it has taken took long for the server to startup
-        if ((new Date()).getTime() - serverStartTime > this.manifest.serverStartupTimeoutSeconds * 1000) {
-          // Server startup timeout occurred! Kill the process, upload logs if
-          // needed and fail.
-          otpServerProcess.kill()
-          await this.uploadServerLogs()
-          await this.fail(`Server took longer than ${this.manifest.serverStartupTimeoutSeconds} seconds to start!`)
-        }
+      // check for server startup
+      if (data.includes('Grizzly server running')) {
+        foundSuccessfulServerStartMessage = true
+      }
+      // make sure the graph was read
+      if (data.includes('Main graph read.')) {
+        graphRead = true
+      }
+      // make sure there are no graph register errors
+      if (
+        data.includes(
+          `Can't register router ID '${this.manifest.routerName}', no graph.`
+        )
+      ) {
+        // A problem occurred such that the router with the graph was unable to
+        // be registered.
+        otpServerProcess.kill()
+        await this.uploadServerLogs()
+        await this.fail('An error occurred while trying to start the OTP Server!')
       }
 
-      await this.uploadServerLogs()
-      this.status.serverStarted = true
-      await this.updateStatus('Server successfully started!', 100)
+      // Fail this script if it has taken took long for the server to startup
+      if ((new Date()).getTime() - serverStartTime > this.manifest.serverStartupTimeoutSeconds * 1000) {
+        // Server startup timeout occurred! Kill the process, upload logs if
+        // needed and fail.
+        otpServerProcess.kill()
+        await this.uploadServerLogs()
+        await this.fail(`Server took longer than ${this.manifest.serverStartupTimeoutSeconds} seconds to start!`)
+      }
     }
+
+    await this.uploadServerLogs()
+    this.status.serverStarted = true
+    await this.updateStatus('Server successfully started!', 100)
   }
 
   /**
@@ -581,7 +591,7 @@ module.exports = class OtpRunner {
 
       // build graph
       await this.updateStatus('Building graph', this.manifest.runServer ? 30 : 50)
-      await this.runOtpCommand('build')
+      await this.buildGraph()
       await this.updateStatus('Graph built successfully!', this.manifest.runServer ? 70 : 90)
 
       // add various follow-up tasks that can occur independently of the server
@@ -607,7 +617,7 @@ module.exports = class OtpRunner {
       }
 
       // run server
-      postBuildTasks = [this.runOtpCommand('server')].concat(postBuildTasks)
+      postBuildTasks = [this.startServer()].concat(postBuildTasks)
     }
 
     await Promise.all(postBuildTasks)

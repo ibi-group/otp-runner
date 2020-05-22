@@ -162,7 +162,11 @@ function mockOTPGraphBuild (shouldPass = false) {
 }
 
 /**
- * A helper for mocking OTP server startups
+ * A helper for mocking OTP server startups. This will create a mock of spawn
+ * arguments and will write mock startup logs.
+ *
+ * @param  {String} [customLogs] If provided, these will be written to the mock
+ *   server startup log file, instead of the mock logs that this mock generates.
  * @param  {Integer} exitCode the exit code to simulare
  * @param  {Boolean} graphLoad  if true, writes a log entry that
  *  simulates a successful graph load.
@@ -171,6 +175,7 @@ function mockOTPGraphBuild (shouldPass = false) {
  *  success
  */
 function mockOTPServerStart ({
+  customLogs,
   exitCode,
   graphLoad,
   serverStarts
@@ -198,7 +203,10 @@ function mockOTPServerStart ({
         logs.push('22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running.')
       }
 
-      fs.writeFileSync('./temp-test-files/otp-server.log', logs.join('\n'))
+      fs.writeFileSync(
+        './temp-test-files/otp-server.log',
+        customLogs || logs.join('\n')
+      )
       return {
         exitCode,
         kill: () => {},
@@ -730,6 +738,62 @@ describe('otp-runner', () => {
       await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
       // don't snapshot otp-runner due to differing timestamps
       await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('ERROR Server took longer than 2 seconds to start!')
+    })
+
+    it('should fail if OTP server fails to read graph', async () => {
+      // simulate successful download of jar from s3
+      mockS3Transfer(
+        's3://mock-bucket/ok.jar',
+        './temp-test-files/ok.jar'
+      )
+
+      // simulate successful download of Graph.obj from s3
+      mockS3Transfer(
+        's3://mock-bucket/Graph.obj',
+        'temp-test-files/default/Graph.obj'
+      )
+
+      // simulate successful server startup
+      const logs = []
+      logs.push('16:59:42.029 INFO (InputStreamGraphSource.java:177) Loading graph...')
+      logs.push('16:59:42.493 ERROR (InputStreamGraphSource.java:181) Exception while loading graph \'default\'.')
+      logs.push('com.esotericsoftware.kryo.KryoException: Encountered unregistered class ID: 13994')
+      logs.push('        at com.esotericsoftware.kryo.util.DefaultClassResolver.readClass(DefaultClassResolver.java:137) ~[otp-latest-ibi-dev:1.1]')
+      logs.push('16:59:42.494 WARN (InputStreamGraphSource.java:114) Unable to load data for router \'default\'.')
+      logs.push('16:59:42.494 WARN (GraphService.java:185) Can\'t register router ID \'default\', no graph.')
+      logs.push('16:59:42.499 INFO (GrizzlyServer.java:72) Starting OTP Grizzly server on ports 8080 (HTTP) and 8081 (HTTPS) of interface 0.0.0.0')
+      logs.push('16:59:45.811 INFO (GrizzlyServer.java:153) Grizzly server running.')
+
+      mockOTPServerStart({
+        customLogs: logs.join('\n'),
+        exitCode: null
+      })
+
+      // simulate s3 upload of server logs
+      mockS3Transfer(
+        './temp-test-files/otp-server.log',
+        's3://mock-bucket/otp-server.log'
+      )
+
+      // simulate s3 upload of otp-runner.log
+      mockS3Transfer(
+        './temp-test-files/otp-runner.log',
+        's3://mock-bucket/otp-runner.log'
+      )
+
+      // run otp-runner
+      await runOtpRunner('./fixtures/server-only-manifest.json', true)
+
+      // verify that router config json was written
+      expect(
+        await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
+      ).toMatchSnapshot()
+
+      // verify that various files were mock-uploaded to s3
+      await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
+      // don't snapshot otp-runner due to differing timestamps
+      await expect(s3uploads['s3://mock-bucket/otp-runner.log'])
+        .toContain('ERROR An error occurred while trying to start the OTP Server!')
     })
   })
 })
