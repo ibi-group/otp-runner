@@ -380,6 +380,31 @@ module.exports = class OtpRunner {
   }
 
   /**
+   * Gets the ec2 instance ID
+   */
+  async getInstanceId () {
+    if (!this.instanceId) {
+      // calculate instance ID
+      try {
+        const response = await got('http://169.254.169.254/latest/meta-data/instance-id')
+        this.instanceId = response.body
+      } catch (e) {
+        await this.fail(`Failed to get instanceId. Error: ${e}`)
+      }
+    }
+    return this.instanceId
+  }
+
+  /**
+   * If configured, will generate a prefix on the server and otp-runner log
+   * files to differentiate when uploading.
+   */
+  async getLogUploadPrefix () {
+    if (!this.manifest.prefixLogUploadsWithInstanceId) return ''
+    return `${this.getInstanceId()}-`
+  }
+
+  /**
    * Uploads a file to AWS S3 using the command line. Returns true if successful.
    */
   async uploadFileToS3 ({ filePath, s3Path }) {
@@ -445,7 +470,7 @@ module.exports = class OtpRunner {
     if (this.manifest.uploadServerStartupLogs) {
       await this.uploadFileToS3({
         filePath: this.manifest.serverLogFile,
-        s3Path: `${this.manifest.s3UploadBucket}/otp-server.log`
+        s3Path: `${this.manifest.s3UploadBucket}/${await this.getLogUploadPrefix()}otp-server.log`
       })
     }
   }
@@ -494,7 +519,7 @@ module.exports = class OtpRunner {
     if (this.manifest && this.manifest.uploadOtpRunnerLogs) {
       await this.uploadFileToS3({
         filePath: this.manifest.otpRunnerLogFile,
-        s3Path: `${this.manifest.s3UploadBucket}/otp-runner.log`
+        s3Path: `${this.manifest.s3UploadBucket}/${await this.getLogUploadPrefix()}otp-runner.log`
       })
     }
   }
