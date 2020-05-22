@@ -230,6 +230,8 @@ module.exports = class OtpRunner {
     }
 
     // if this point is reached, the manfiest.json file is valid!
+    this.log.info('manifest is valid!')
+    this.log.info(JSON.stringify(this.manifest, null, 2))
   }
 
   async waitOneSecond () {
@@ -418,7 +420,7 @@ module.exports = class OtpRunner {
           filePath: path.join(
             this.manifest.graphsFolder,
             this.manifest.routerName,
-            'graph.obj'
+            'Graph.obj'
           ),
           s3Path: this.manifest.graphObjUrl
         })
