@@ -4,7 +4,7 @@
   "buildLogFile": "./temp-test-files/otp-build.log",
   "jarFile": "./temp-test-files/ok.jar",
   "jarUrl": "s3://mock-bucket/ok.jar",
-  "graphObjUrl": "s3://mock-bucket/graph.obj",
+  "graphObjUrl": "s3://mock-bucket/Graph.obj",
   "graphsFolder": "./temp-test-files/",
   "gtfsAndOsmUrls": [],
   "otpRunnerLogFile": "./temp-test-files/otp-runner.log",

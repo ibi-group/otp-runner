@@ -193,7 +193,7 @@ module.exports = class OtpRunner {
           (new URL(this.manifest.graphObjUrl).protocol !== 's3:')
       )
     ) {
-      errors.push('`graphObjUrl` must be an s3 url in order to upload graph.obj file')
+      errors.push('`graphObjUrl` must be an s3 url in order to upload Graph.obj file')
     }
 
     // if build is set to false, then the graphObjUrl must be defined
@@ -553,9 +553,9 @@ module.exports = class OtpRunner {
       })
     } else if (this.manifest.runServer) {
       // this.manifest says to run the server without building a graph. Therefore,
-      // download a graph.obj file.
+      // download a Graph.obj file.
       this.addDownloadTask({
-        dest: path.join(this.manifest.graphsFolder, this.manifest.routerName, 'graph.obj'),
+        dest: path.join(this.manifest.graphsFolder, this.manifest.routerName, 'Graph.obj'),
         url: this.manifest.graphObjUrl
       })
     }

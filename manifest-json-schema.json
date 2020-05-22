@@ -18,7 +18,7 @@
     },
     "graphObjUrl": {
       "type": "string",
-      "description": "A url where the graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uplaoded to."
+      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uplaoded to."
     },
     "graphsFolder": {
       "type": "string",
@@ -98,7 +98,7 @@
     },
     "uploadGraph": {
       "type": "boolean",
-      "description": "If true, the graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUrl` must be defined and be a valid AWS s3 path.",
+      "description": "If true, the Graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUrl` must be defined and be a valid AWS s3 path.",
       "default": false
     },
     "uploadOtpRunnerLogs": {

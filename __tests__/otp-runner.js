@@ -114,7 +114,7 @@ function mockS3Transfer (src, dst) {
 /**
  * A helper for mocking OTP graph builds
  * @param  {Boolean} [shouldPass=false] if set to true, a mock OTP run will be
- *  setup that successfully "runs" by writing a graph.obj file, a graph report
+ *  setup that successfully "runs" by writing a Graph.obj file, a graph report
  *  and mock logging success
  */
 function mockOTPGraphBuild (shouldPass = false) {
@@ -133,7 +133,7 @@ function mockOTPGraphBuild (shouldPass = false) {
     fn: () => {
       if (shouldPass) {
         // write a mock graph to file
-        fs.writeFileSync('./temp-test-files/default/graph.obj', 'mock graph')
+        fs.writeFileSync('./temp-test-files/default/Graph.obj', 'mock graph')
 
         // write a mock graph build report to file
         fs.writeFileSync(
@@ -308,10 +308,10 @@ describe('otp-runner', () => {
         's3://mock-bucket/otp-build.log'
       )
 
-      // simulate s3 upload of graph.obj
+      // simulate s3 upload of Graph.obj
       mockS3Transfer(
-        'temp-test-files/default/graph.obj',
-        's3://mock-bucket/graph.obj'
+        'temp-test-files/default/Graph.obj',
+        's3://mock-bucket/Graph.obj'
       )
 
       // simulate s3 upload of graph build report
@@ -336,7 +336,7 @@ describe('otp-runner', () => {
 
       // verify that various files were mock-uploaded to s3
       await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
-      await expect(s3uploads['s3://mock-bucket/graph.obj']).toMatchSnapshot()
+      await expect(s3uploads['s3://mock-bucket/Graph.obj']).toMatchSnapshot()
       await expect(s3uploads['s3://mock-bucket/graph-build-report.zip']).toMatchSnapshot()
       // don't snapshot otp-runner due to differing timestamps
       await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('INFO  Graph uploaded!')
@@ -376,10 +376,10 @@ describe('otp-runner', () => {
         's3://mock-bucket/otp-server.log'
       )
 
-      // simulate s3 upload of graph.obj
+      // simulate s3 upload of Graph.obj
       mockS3Transfer(
-        'temp-test-files/default/graph.obj',
-        's3://mock-bucket/graph.obj'
+        'temp-test-files/default/Graph.obj',
+        's3://mock-bucket/Graph.obj'
       )
 
       // simulate s3 upload of graph build report
@@ -409,7 +409,7 @@ describe('otp-runner', () => {
       // verify that various files were mock-uploaded to s3
       await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
       await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
-      await expect(s3uploads['s3://mock-bucket/graph.obj']).toMatchSnapshot()
+      await expect(s3uploads['s3://mock-bucket/Graph.obj']).toMatchSnapshot()
       await expect(s3uploads['s3://mock-bucket/graph-build-report.zip']).toMatchSnapshot()
       // don't snapshot otp-runner due to differing timestamps
       await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('INFO  Server successfully started!')
@@ -422,10 +422,10 @@ describe('otp-runner', () => {
         './temp-test-files/ok.jar'
       )
 
-      // simulate successful download of graph.obj from s3
+      // simulate successful download of Graph.obj from s3
       mockS3Transfer(
-        's3://mock-bucket/graph.obj',
-        'temp-test-files/default/graph.obj'
+        's3://mock-bucket/Graph.obj',
+        'temp-test-files/default/Graph.obj'
       )
 
       // simulate successful server startup
@@ -561,8 +561,8 @@ describe('otp-runner', () => {
           [
             's3',
             'cp',
-            'temp-test-files/default/graph.obj',
-            's3://mock-bucket/graph.obj'
+            'temp-test-files/default/Graph.obj',
+            's3://mock-bucket/Graph.obj'
           ]
         ],
         fn: async () => {
@@ -580,10 +580,10 @@ describe('otp-runner', () => {
 
       // verify that various files were mock-uploaded to s3
       await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
-      await expect(s3uploads['s3://mock-bucket/graph.obj']).not.toBeDefined()
+      await expect(s3uploads['s3://mock-bucket/Graph.obj']).not.toBeDefined()
       await expect(s3uploads['s3://mock-bucket/graph-build-report.zip']).toMatchSnapshot()
       // don't snapshot otp-runner due to differing timestamps
-      await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('ERROR Failed to upload temp-test-files/default/graph.obj to s3://mock-bucket/graph.obj!')
+      await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('ERROR Failed to upload temp-test-files/default/Graph.obj to s3://mock-bucket/Graph.obj!')
     })
 
     it('should fail if OTP server starts without loading a graph', async () => {
@@ -593,10 +593,10 @@ describe('otp-runner', () => {
         './temp-test-files/ok.jar'
       )
 
-      // simulate successful download of graph.obj from s3
+      // simulate successful download of Graph.obj from s3
       mockS3Transfer(
-        's3://mock-bucket/graph.obj',
-        'temp-test-files/default/graph.obj'
+        's3://mock-bucket/Graph.obj',
+        'temp-test-files/default/Graph.obj'
       )
 
       // simulate successful server startup
@@ -639,10 +639,10 @@ describe('otp-runner', () => {
         './temp-test-files/ok.jar'
       )
 
-      // simulate successful download of graph.obj from s3
+      // simulate successful download of Graph.obj from s3
       mockS3Transfer(
-        's3://mock-bucket/graph.obj',
-        'temp-test-files/default/graph.obj'
+        's3://mock-bucket/Graph.obj',
+        'temp-test-files/default/Graph.obj'
       )
 
       // simulate successful server startup
@@ -685,10 +685,10 @@ describe('otp-runner', () => {
         './temp-test-files/ok.jar'
       )
 
-      // simulate successful download of graph.obj from s3
+      // simulate successful download of Graph.obj from s3
       mockS3Transfer(
-        's3://mock-bucket/graph.obj',
-        'temp-test-files/default/graph.obj'
+        's3://mock-bucket/Graph.obj',
+        'temp-test-files/default/Graph.obj'
       )
 
       // simulate successful server startup
