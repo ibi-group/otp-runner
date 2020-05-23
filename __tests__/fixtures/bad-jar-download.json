@@ -3,6 +3,7 @@
   "buildLogFile": "./temp-test-files/otp-build.log",
   "jarFile": "./temp-test-files/failme.jar",
   "jarUrl": "s3://mock-bucket/failme.jar",
+  "graphsFolder": "./temp-test-files/",
   "gtfsAndOsmUrls": [],
   "statusFileLocation": "./temp-test-files/status.json"
 }

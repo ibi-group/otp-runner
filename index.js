@@ -537,10 +537,18 @@ module.exports = class OtpRunner {
   async run () {
     await this.validateManifest()
 
-    // ensure certain directories exist
-    await fs.mkdirp(
-      path.join(this.manifest.graphsFolder, this.manifest.routerName)
+    // recreate certain directories to make sure we're starting fresh
+    const routerFolder = path.join(
+      this.manifest.graphsFolder,
+      this.manifest.routerName
     )
+    try {
+      await fs.remove(routerFolder)
+      await fs.mkdirp(routerFolder)
+    } catch (e) {
+      this.log.error(e)
+      await this.fail('Failed to recreate graph router folder')
+    }
 
     // add task to download OTP jar
     this.addDownloadTask({
@@ -553,11 +561,7 @@ module.exports = class OtpRunner {
       this.manifest.gtfsAndOsmUrls.forEach(url => {
         const splitUrl = url.split('/')
         this.addDownloadTask({
-          dest: path.join(
-            this.manifest.graphsFolder,
-            this.manifest.routerName,
-            splitUrl[splitUrl.length - 1]
-          ),
+          dest: path.join(routerFolder, splitUrl[splitUrl.length - 1]),
           url
         })
       })
@@ -565,7 +569,7 @@ module.exports = class OtpRunner {
       // this.manifest says to run the server without building a graph. Therefore,
       // download a Graph.obj file.
       this.addDownloadTask({
-        dest: path.join(this.manifest.graphsFolder, this.manifest.routerName, 'Graph.obj'),
+        dest: path.join(routerFolder, 'Graph.obj'),
         url: this.manifest.graphObjUrl
       })
     }
@@ -584,15 +588,21 @@ module.exports = class OtpRunner {
       // write build-config.json file if contents are supplied in this.manifest
       if (this.manifest.buildConfigJSON) {
         await fs.writeFile(
-          path.join(this.manifest.graphsFolder, this.manifest.routerName, 'build-config.json'),
+          path.join(routerFolder, 'build-config.json'),
           this.manifest.buildConfigJSON
         )
       }
 
       // build graph
-      await this.updateStatus('Building graph', this.manifest.runServer ? 30 : 50)
+      await this.updateStatus(
+        'Building graph',
+        this.manifest.runServer ? 30 : 50
+      )
       await this.buildGraph()
-      await this.updateStatus('Graph built successfully!', this.manifest.runServer ? 70 : 90)
+      await this.updateStatus(
+        'Graph built successfully!',
+        this.manifest.runServer ? 70 : 90
+      )
 
       // add various follow-up tasks that can occur independently of the server
       // startup
@@ -611,7 +621,7 @@ module.exports = class OtpRunner {
       // write build-config.json file if contents are supplied in this.manifest
       if (this.manifest.routerConfigJSON) {
         await fs.writeFile(
-          path.join(this.manifest.graphsFolder, this.manifest.routerName, 'router-config.json'),
+          path.join(routerFolder, 'router-config.json'),
           this.manifest.routerConfigJSON
         )
       }
