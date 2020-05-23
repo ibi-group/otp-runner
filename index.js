@@ -371,22 +371,31 @@ module.exports = class OtpRunner {
         // be registered.
         otpServerProcess.kill()
         await this.uploadServerLogs()
-        await this.fail('An error occurred while trying to start the OTP Server!')
+        await this.fail(
+          'An error occurred while trying to start the OTP Server!'
+        )
       }
 
       // Fail this script if it has taken took long for the server to startup
-      if ((new Date()).getTime() - serverStartTime > this.manifest.serverStartupTimeoutSeconds * 1000) {
+      if (
+        (new Date()).getTime() - serverStartTime >
+          this.manifest.serverStartupTimeoutSeconds * 1000
+      ) {
         // Server startup timeout occurred! Kill the process, upload logs if
         // needed and fail.
         otpServerProcess.kill()
         await this.uploadServerLogs()
-        await this.fail(`Server took longer than ${this.manifest.serverStartupTimeoutSeconds} seconds to start!`)
+        await this.fail(
+          `Server took longer than ${this.manifest.serverStartupTimeoutSeconds} seconds to start!`
+        )
       }
     }
 
     await this.uploadServerLogs()
     this.status.serverStarted = true
-    await this.updateStatus('Server successfully started!', 100)
+    // Set pctProgress to 90 in case other post graph build tasks are still
+    // running
+    await this.updateStatus('Server successfully started!', 90)
   }
 
   /**
