@@ -13,6 +13,21 @@ In order to run this script, a file called `manifest.json` with valid JSON must 
 
 A number of default parameters will instruct otp-runner to write files to various directories within the `/var` folder. Therefore, the above example uses `sudo`. But the sudo command is not needed if files are written to other directories.
 
+### status.json
+
+otp-runner will write a JSON status file with useful information as it runs. The following fields that get written to are as follows:
+
+| Key | Type | Description |
+| - | - | - |
+| error | Boolean | True if a fatal error occurred while running otp-runner. |
+| graphBuilt | Boolean | True if a graph was successfully built. |
+| graphUploaded | Boolean | True if a Graph.obj file was successfully uploaded to AWS S3. |
+| serverStarted | Boolean | True if the server was successfully started (graph was read and server is ready to accept requests). |
+| message | String | A description of the current status of the script. |
+| numFilesDownloaded | Number | The number of files that have been downloaded so far. |
+| pctProgress | Number | The overall percent progress (on a scale of 0-100) that is estimated to have been completed so far. |
+| totalFilesToDownload | Number | The total number of files that need to be downloaded. |
+
 ## Configuration
 
 When running otp-runner, a number of default values will be used when parsing the manifest. These values will dictate whether or not to build a graph with OTP and whether or not to run OTP as a server. The default actions that occur are as follows:
