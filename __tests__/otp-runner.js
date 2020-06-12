@@ -15,7 +15,7 @@ const {
 } = require('./test-utils/mocks/cli-processes')
 
 // IMPORTANT: import this after mocking modules
-const OtpRunner = require('../')
+const OtpRunner = require('../lib')
 
 /**
  * Helper that asserts the status.json file matches a snapshot
@@ -105,6 +105,12 @@ describe('otp-runner', () => {
         './temp-test-files/ok.jar'
       )
 
+      // simulate successful download of GTFS zip file from s3
+      mockS3Transfer(
+        's3://mock-bucket/gtfs.zip',
+        'temp-test-files/default/gtfs.zip'
+      )
+
       // simulate successful graph build and write a few items to build log
       mockOTPGraphBuild(true)
 
@@ -159,6 +165,12 @@ describe('otp-runner', () => {
       mockS3Transfer(
         's3://mock-bucket/ok.jar',
         './temp-test-files/ok.jar'
+      )
+
+      // simulate successful download of GTFS zip file from s3
+      mockS3Transfer(
+        's3://mock-bucket/gtfs.zip',
+        'temp-test-files/default/gtfs.zip'
       )
 
       // simulate successful graph build and write a few items to build log
@@ -306,6 +318,12 @@ describe('otp-runner', () => {
         }
       })
 
+      // simulate successful download of GTFS zip file from s3
+      mockS3Transfer(
+        's3://mock-bucket/gtfs.zip',
+        'temp-test-files/default/gtfs.zip'
+      )
+
       await runOtpRunner('./fixtures/bad-jar-download.json', true)
     })
 
@@ -314,6 +332,12 @@ describe('otp-runner', () => {
       mockS3Transfer(
         's3://mock-bucket/ok.jar',
         './temp-test-files/ok.jar'
+      )
+
+      // simulate successful download of GTFS zip file from s3
+      mockS3Transfer(
+        's3://mock-bucket/gtfs.zip',
+        'temp-test-files/default/gtfs.zip'
       )
 
       // simulate successful graph build and write a few items to build log
@@ -348,6 +372,12 @@ describe('otp-runner', () => {
       mockS3Transfer(
         's3://mock-bucket/ok.jar',
         './temp-test-files/ok.jar'
+      )
+
+      // simulate successful download of GTFS zip file from s3
+      mockS3Transfer(
+        's3://mock-bucket/gtfs.zip',
+        'temp-test-files/default/gtfs.zip'
       )
 
       // simulate successful graph build and write a few items to build log

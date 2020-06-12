@@ -6,7 +6,7 @@
   "graphsFolder": "./temp-test-files/",
   "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
   "routerConfigJSON": "{\"timeout\": 4}",
-  "s3UploadBucket": "s3://mock-bucket",
+  "s3UploadPath": "s3://mock-bucket",
   "serverLogFile": "./temp-test-files/otp-server.log",
   "serverStartupTimeoutSeconds": 2,
   "statusFileLocation": "./temp-test-files/status.json",

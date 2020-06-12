@@ -4,17 +4,19 @@ const path = require('path')
 
 const fs = require('fs-extra')
 
-const OtpRunner = require('../')
+const OtpRunner = require('../lib')
 
 async function main () {
   const pathToManifestJson = process.argv[2]
   if (pathToManifestJson && pathToManifestJson.endsWith('.json')) {
     // read json manifest file
-    if (!(await fs.pathExists(pathToManifestJson))) {
+    const manifestExists = await fs.pathExists(pathToManifestJson)
+    if (!manifestExists) {
       throw new Error(`manifest.json file does not exist at path: ${pathToManifestJson}!`)
     }
+    const manifestFile = path.resolve(pathToManifestJson)
     const runner = new OtpRunner(
-      require(path.resolve(pathToManifestJson))
+      require(manifestFile)
     )
     await runner.run()
   } else {

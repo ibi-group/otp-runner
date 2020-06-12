@@ -18,7 +18,7 @@
     },
     "graphObjUrl": {
       "type": "string",
-      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uplaoded to."
+      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to."
     },
     "graphsFolder": {
       "type": "string",
@@ -67,9 +67,9 @@
       "description": "If true, run OTP as a server.",
       "default": true
     },
-    "s3UploadBucket": {
+    "s3UploadPath": {
       "type": "string",
-      "description": "The base path of an s3 bucket where files will be uploaded to."
+      "description": "The base path of an s3 bucket where files will be uploaded to. Ex: `s3://path/to/folder`"
     },
     "serverLogFile": {
       "type": "string",
@@ -78,7 +78,7 @@
     },
     "serverStartupTimeoutSeconds": {
       "type": "number",
-      "description": "The amount of time to wait for a successful server startup before failing.",
+      "description": "The amount of time to wait for a successful server startup (server initialization and graph read) before failing.",
       "default": 300
     },
     "statusFileLocation": {
@@ -88,12 +88,12 @@
     },
     "uploadGraphBuildLogs": {
       "type": "boolean",
-      "description": "If true, the logs from a graph build will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-build.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "description": "If true, the logs from a graph build will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-build.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadGraphBuildReport": {
       "type": "boolean",
-      "description": "If true, the OTP-generated graph build report will be zipped up and uploaded to the provided s3 bucket to the path `${s3UploadBucket}/graph-build-report.zip`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "description": "If true, the OTP-generated graph build report will be zipped up and uploaded to the provided s3 bucket to the path `${s3UploadPath}/graph-build-report.zip`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadGraph": {
@@ -103,12 +103,12 @@
     },
     "uploadOtpRunnerLogs": {
       "type": "boolean",
-      "description": "If true, the logs from the otp-runner script will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-runner.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "description": "If true, the logs from the otp-runner script will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-runner.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadServerStartupLogs": {
       "type": "boolean",
-      "description": "If true, the logs from the server startup will be uploaded to the provided s3 bucket to the path `${s3UploadBucket}/otp-server.log`. Note: if this is set to true, `s3UploadBucket` must be defined.",
+      "description": "If true, the logs from the server startup will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-server.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     }
   }

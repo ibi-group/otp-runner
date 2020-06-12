@@ -82,11 +82,11 @@ Object {
   "error": true,
   "graphBuilt": false,
   "graphUploaded": false,
-  "message": "Failed to download file from s3: s3://mock-bucket/failme.jar. Error: Error: mock download failure",
-  "numFilesDownloaded": 0,
-  "pctProgress": 10,
+  "message": "Failed to download file: s3://mock-bucket/failme.jar. Error: Error: mock download failure",
+  "numFilesDownloaded": 1,
+  "pctProgress": 20,
   "serverStarted": false,
-  "totalFilesToDownload": 1,
+  "totalFilesToDownload": 2,
 }
 `;
 
@@ -96,10 +96,10 @@ Object {
   "graphBuilt": true,
   "graphUploaded": false,
   "message": "Failed to upload graph!",
-  "numFilesDownloaded": 1,
+  "numFilesDownloaded": 2,
   "pctProgress": 90,
   "serverStarted": false,
-  "totalFilesToDownload": 1,
+  "totalFilesToDownload": 2,
 }
 `;
 
@@ -115,10 +115,10 @@ Object {
   "graphBuilt": false,
   "graphUploaded": false,
   "message": "Build graph failed! Please see logs.",
-  "numFilesDownloaded": 1,
+  "numFilesDownloaded": 2,
   "pctProgress": 30,
   "serverStarted": false,
-  "totalFilesToDownload": 1,
+  "totalFilesToDownload": 2,
 }
 `;
 
@@ -146,10 +146,10 @@ Object {
 
       \`gtfsAndOsmUrls\` must be populated for graph build
 \`graphObjUrl\` must be an s3 url in order to upload Graph.obj file
-\`s3UploadBucket\` must be defined if \`uploadGraphBuildLogs\` is set to true
-\`s3UploadBucket\` must be defined if \`uploadGraphBuildReport\` is set to true
-\`s3UploadBucket\` must be defined if \`uploadOtpRunnerLogs\` is set to true
-\`s3UploadBucket\` must be defined if \`uploadServerStartupLogs\` is set to true",
+\`s3UploadPath\` must be defined if \`uploadGraphBuildLogs\` is set to true
+\`s3UploadPath\` must be defined if \`uploadGraphBuildReport\` is set to true
+\`s3UploadPath\` must be defined if \`uploadOtpRunnerLogs\` is set to true
+\`s3UploadPath\` must be defined if \`uploadServerStartupLogs\` is set to true",
   "numFilesDownloaded": 0,
   "pctProgress": 0,
   "serverStarted": false,
@@ -163,10 +163,10 @@ Object {
   "graphBuilt": true,
   "graphUploaded": true,
   "message": "Server successfully started!",
-  "numFilesDownloaded": 1,
-  "pctProgress": 100,
+  "numFilesDownloaded": 2,
+  "pctProgress": 90,
   "serverStarted": true,
-  "totalFilesToDownload": 1,
+  "totalFilesToDownload": 2,
 }
 `;
 
@@ -191,10 +191,10 @@ Object {
   "graphBuilt": true,
   "graphUploaded": true,
   "message": "Graph uploaded!",
-  "numFilesDownloaded": 1,
+  "numFilesDownloaded": 2,
   "pctProgress": 100,
   "serverStarted": false,
-  "totalFilesToDownload": 1,
+  "totalFilesToDownload": 2,
 }
 `;
 
@@ -213,7 +213,7 @@ Object {
   "graphUploaded": false,
   "message": "Server successfully started!",
   "numFilesDownloaded": 2,
-  "pctProgress": 100,
+  "pctProgress": 90,
   "serverStarted": true,
   "totalFilesToDownload": 2,
 }
