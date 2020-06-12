@@ -29,7 +29,7 @@ It is possible to download files from AWS S3 as long as the proper AWS S3 url is
 
 ### Manifest.json values
 
-*The rest of this README contains auto-generated contents via the `yarn update-docs` script and should not be directly edited!*
+*The rest of this README contains auto-generated contents via the `yarn update-readme` script and should not be directly edited!*
 
 | Key | Type | Required | Default | Description |
 | - | - | - | - | - |
