@@ -16,7 +16,7 @@ let s3uploads = {}
  * variable for future verification.
  *
  * @param  {string} src the source file
- * @param  {string} dst the destination of where to write the sourc file to
+ * @param  {string} dst the destination of where to write the source file to
  */
 function mockS3Transfer (src, dst) {
   addCustomExecaMock({
@@ -29,6 +29,43 @@ function mockS3Transfer (src, dst) {
       }
     }
   })
+}
+
+/**
+ * Shorthand function to create a mock for an aws s3 cp operation that transfers
+ * a file from the local machine to s3. This assumes the default s3 bucket and
+ * default local temp test files location are used, unless the localPath
+ * argument is also provided.
+ *
+ * @param  {String} filename The filename without paths to transfer. It is
+ *    assumed that this filename is present in the ./temp-test-files folder and
+ *    that the file should be uploaded to the s3://mock-bucket s3 bucket.
+ * @param  {String} [localPath] If provided, use this path instead of just the
+ *    temp-test-files folder plus the filename.
+ */
+function mockLocalToS3Transfer (filename, localPath) {
+  const src = localPath || `./temp-test-files/${filename}`
+  const dst = `s3://mock-bucket/${filename}`
+  mockS3Transfer(src, dst)
+}
+
+/**
+ * Shorthand function to create a mock for an aws s3 cp operation that transfers
+ * a file from s3 to the local machine. This assumes the default s3 bucket and
+ * default local temp test files location are used, unless the localPath
+ * argument is also provided.
+ *
+ * @param  {String} filename The filename without paths to transfer. It is
+ *    assumed that this filename is present in the s3://mock-bucket s3 bucket
+ *    and that the file should be downloaded into the ./temp-test-files folder.
+ * @param  {String} [localPath] If provided, use this path instead of just the
+ *    temp-test-files folder plus the filename.
+ */
+function mockS3ToLocalTransfer (filename, localPath) {
+  mockS3Transfer(
+    `s3://mock-bucket/${filename}`,
+    localPath || `./temp-test-files/${filename}`
+  )
 }
 
 /**
@@ -93,7 +130,7 @@ function mockOTPGraphBuild (shouldPass = false) {
  *
  * @param  {String} [customLogs] If provided, these will be written to the mock
  *   server startup log file, instead of the mock logs that this mock generates.
- * @param  {Integer} exitCode the exit code to simulare
+ * @param  {Integer} exitCode the exit code to simulate
  * @param  {Boolean} graphLoad  if true, writes a log entry that
  *  simulates a successful graph load.
  * @param  {Boolean} serverStarts if set to true, a mock OTP run will be
@@ -177,8 +214,10 @@ function resetCliMockConfig () {
 
 module.exports = {
   getS3Uploads,
+  mockLocalToS3Transfer,
   mockOTPGraphBuild,
   mockOTPServerStart,
+  mockS3ToLocalTransfer,
   mockS3Transfer,
   mockZippingGraphBuildReport,
   resetCliMockConfig

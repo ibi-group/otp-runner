@@ -8,7 +8,7 @@ async function main () {
     const expectedContents = await generateNewReadme()
     // trim ending whitespace to not worry about an extra line some editors add
     if (currentContents.trim() !== expectedContents.trim()) {
-      throw new Error('REAMDE.md appears to be out of sync with manifest-json-schema.json file!')
+      throw new Error('README.md appears to be out of sync with manifest-json-schema.json file!')
     }
   } catch (e) {
     console.error(e)

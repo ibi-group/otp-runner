@@ -8,7 +8,7 @@
     },
     "buildGraph": {
       "type": "boolean",
-      "description": "If true, run OpenTripPlanner in build mode",
+      "description": "If true, run OpenTripPlanner in build mode. If this flag and the `runServer` flag are both false, an error will occur.",
       "default": true
     },
     "buildLogFile": {
@@ -18,7 +18,7 @@
     },
     "graphObjUrl": {
       "type": "string",
-      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to."
+      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to."
     },
     "graphsFolder": {
       "type": "string",
@@ -64,12 +64,12 @@
     },
     "runServer": {
       "type": "boolean",
-      "description": "If true, run OTP as a server.",
+      "description": "If true, run OTP as a server.  If this flag and the `buildGraph` flag are both false, an error will occur.",
       "default": true
     },
     "s3UploadPath": {
       "type": "string",
-      "description": "The base path of an s3 bucket where files will be uploaded to. Ex: `s3://path/to/folder`"
+      "description": "The base path of an s3 bucket where files will be uploaded to. Ex: `s3://bucket-name/folder`"
     },
     "serverLogFile": {
       "type": "string",
