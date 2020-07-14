@@ -1,0 +1,18 @@
+{
+  "buildConfigJSON": "{\"htmlAnnotations\": true}",
+  "buildGraph": true,
+  "buildLogFile": "./temp-test-files/otp-build.log",
+  "jarFile": "./temp-test-files/ok.jar",
+  "jarUrl": "s3://mock-bucket/ok.jar",
+  "graphObjUrl": "s3://mock-bucket/Graph.obj",
+  "graphsFolder": "./temp-test-files/",
+  "gtfsAndOsmUrls": ["s3://mock-bucket/gtfs.zip"],
+  "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
+  "runServer": false,
+  "s3UploadPath": "s3://mock-bucket",
+  "statusFileLocation": "./temp-test-files/status.json",
+  "uploadGraphBuildLogs": true,
+  "uploadGraphBuildReport": true,
+  "uploadGraph": true,
+  "uploadOtpRunnerLogs": true
+}

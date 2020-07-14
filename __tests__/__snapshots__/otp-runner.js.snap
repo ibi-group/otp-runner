@@ -1,0 +1,227 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`otp-runner failures should fail if OTP server fails to read graph 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "An error occurred while trying to start the OTP Server!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 40,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if OTP server fails to read graph 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner failures should fail if OTP server fails to read graph 3`] = `
+"16:59:42.029 INFO (InputStreamGraphSource.java:177) Loading graph...
+16:59:42.493 ERROR (InputStreamGraphSource.java:181) Exception while loading graph 'default'.
+com.esotericsoftware.kryo.KryoException: Encountered unregistered class ID: 13994
+        at com.esotericsoftware.kryo.util.DefaultClassResolver.readClass(DefaultClassResolver.java:137) ~[otp-latest-ibi-dev:1.1]
+16:59:42.494 WARN (InputStreamGraphSource.java:114) Unable to load data for router 'default'.
+16:59:42.494 WARN (GraphService.java:185) Can't register router ID 'default', no graph.
+16:59:42.499 INFO (GrizzlyServer.java:72) Starting OTP Grizzly server on ports 8080 (HTTP) and 8081 (HTTPS) of interface 0.0.0.0
+16:59:45.811 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;
+
+exports[`otp-runner failures should fail if OTP server fails to start 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Server failed to start and exited with code 1",
+  "numFilesDownloaded": 2,
+  "pctProgress": 40,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if OTP server fails to start 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner failures should fail if OTP server fails to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
+
+exports[`otp-runner failures should fail if OTP server starts without loading a graph 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Server took longer than 2 seconds to start!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 40,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if OTP server starts without loading a graph 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner failures should fail if OTP server starts without loading a graph 3`] = `"22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."`;
+
+exports[`otp-runner failures should fail if OTP server takes too long to start 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Server took longer than 2 seconds to start!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 40,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if OTP server takes too long to start 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner failures should fail if OTP server takes too long to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
+
+exports[`otp-runner failures should fail if a download fails 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Failed to download file: s3://mock-bucket/failme.jar. Error: Error: mock download failure",
+  "numFilesDownloaded": 1,
+  "pctProgress": 20,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": true,
+  "graphUploaded": false,
+  "message": "Failed to upload graph!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 90,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 2`] = `"{\\"htmlAnnotations\\": true}"`;
+
+exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 3`] = `"Mock building completed successfully!"`;
+
+exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 4`] = `"mock graph build report"`;
+
+exports[`otp-runner failures should fail if the graph build fails 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Build graph failed! Please see logs.",
+  "numFilesDownloaded": 2,
+  "pctProgress": 30,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner failures should fail if the graph build fails 2`] = `"Mock building failed!"`;
+
+exports[`otp-runner failures should fail with invalid manifest.json 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "data.buildGraph should be boolean",
+  "numFilesDownloaded": 0,
+  "pctProgress": 0,
+  "serverStarted": false,
+  "totalFilesToDownload": 0,
+}
+`;
+
+exports[`otp-runner failures should fail with ok JSON schema, but improper config 1`] = `
+Object {
+  "error": true,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "The following errors were found in the manifest.json file:
+
+      \`gtfsAndOsmUrls\` must be populated for graph build
+\`graphObjUrl\` must be an s3 url in order to upload Graph.obj file
+\`s3UploadPath\` must be defined if \`uploadGraphBuildLogs\` is set to true
+\`s3UploadPath\` must be defined if \`uploadGraphBuildReport\` is set to true
+\`s3UploadPath\` must be defined if \`uploadOtpRunnerLogs\` is set to true
+\`s3UploadPath\` must be defined if \`uploadServerStartupLogs\` is set to true",
+  "numFilesDownloaded": 0,
+  "pctProgress": 0,
+  "serverStarted": false,
+  "totalFilesToDownload": 0,
+}
+`;
+
+exports[`otp-runner successes should build a graph and start a server 1`] = `
+Object {
+  "error": false,
+  "graphBuilt": true,
+  "graphUploaded": true,
+  "message": "Server successfully started!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 90,
+  "serverStarted": true,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner successes should build a graph and start a server 2`] = `"{\\"htmlAnnotations\\": true}"`;
+
+exports[`otp-runner successes should build a graph and start a server 3`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner successes should build a graph and start a server 4`] = `"Mock building completed successfully!"`;
+
+exports[`otp-runner successes should build a graph and start a server 5`] = `
+"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357
+22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;
+
+exports[`otp-runner successes should build a graph and start a server 6`] = `"mock graph"`;
+
+exports[`otp-runner successes should build a graph and start a server 7`] = `"mock graph build report"`;
+
+exports[`otp-runner successes should build a graph only 1`] = `
+Object {
+  "error": false,
+  "graphBuilt": true,
+  "graphUploaded": true,
+  "message": "Graph uploaded!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 100,
+  "serverStarted": false,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner successes should build a graph only 2`] = `"{\\"htmlAnnotations\\": true}"`;
+
+exports[`otp-runner successes should build a graph only 3`] = `"Mock building completed successfully!"`;
+
+exports[`otp-runner successes should build a graph only 4`] = `"mock graph"`;
+
+exports[`otp-runner successes should build a graph only 5`] = `"mock graph build report"`;
+
+exports[`otp-runner successes should download a graph and start OTP server 1`] = `
+Object {
+  "error": false,
+  "graphBuilt": false,
+  "graphUploaded": false,
+  "message": "Server successfully started!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 90,
+  "serverStarted": true,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner successes should download a graph and start OTP server 2`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner successes should download a graph and start OTP server 3`] = `
+"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357
+22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;

@@ -1,0 +1,4 @@
+{
+  "buildGraph": "yep",
+  "statusFileLocation": "./temp-test-files/status.json"
+}

@@ -1,0 +1,37 @@
+{
+  "name": "otp-runner",
+  "version": "1.0.0",
+  "description": "Scripts to assemble GTFS and OSM remote data inputs and run OpenTripPlanner",
+  "main": "index.js",
+  "repository": "https://github.com/ibi-group/otp-runner.git",
+  "author": "evansiroky <evan.siroky@yahoo.com>",
+  "license": "MIT",
+  "private": false,
+  "bin": {
+    "otp-runner": "bin/otp-runner.js"
+  },
+  "scripts": {
+    "cover": "yarn jest --coverage --coverage-paths index.js",
+    "jest": "mastarm test --run-in-band",
+    "lint": "mastarm lint __tests__ bin lib scripts",
+    "prestart": "yarn",
+    "start": "./bin/otp-runner.js manifest.json",
+    "test": "yarn verify-readme-up-to-date && yarn lint && yarn jest",
+    "update-readme": "node scripts/update-readme.js",
+    "verify-readme-up-to-date": "node scripts/verify-readme-up-to-date.js"
+  },
+  "dependencies": {
+    "ajv": "^6.12.0",
+    "circular-buffer": "^1.0.2",
+    "execa": "^4.0.0",
+    "fs-extra": "^9.0.0",
+    "got": "^10.7.0",
+    "simple-node-logger": "^18.12.24"
+  },
+  "devDependencies": {
+    "lodash.isequal": "^4.5.0",
+    "markdown-table": "^2.0.0",
+    "mastarm": "^5.3.1",
+    "nock": "^12.0.3"
+  }
+}

@@ -1,0 +1,6 @@
+{
+  "gtfsAndOsmUrls": [
+    "https://www.ripta.com/stuff/contentmgr/files/0/3cda81dfa140edbe9aae214b26245b4a/files/google_transit.zip",
+    "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
+  ]
+}
