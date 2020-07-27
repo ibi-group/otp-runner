@@ -56,6 +56,7 @@ It is possible to download files from AWS S3 as long as the proper AWS S3 url is
 | gtfsAndOsmUrls | array | Optional | | An array of GTFS and OSM urls that should be downloaded. |
 | jarFile | string | Optional | /opt/otp-1.4.0-shaded.jar | The full path to the OTP jar file. |
 | jarUrl | string | Optional | https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar | A url where the OTP jar can be downloaded from. |
+| nonce | string | Optional | | A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config. |
 | otpRunnerLogFile | string | Optional | /var/log/otp-runner.log | The path where the otp-runner logs should be written to. |
 | prefixLogUploadsWithInstanceId | boolean | Optional | false | If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to s3. |
 | routerConfigJSON | string | Optional | | The raw contents to write to the router-config.json file. |
