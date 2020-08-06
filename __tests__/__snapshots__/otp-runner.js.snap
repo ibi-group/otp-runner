@@ -145,7 +145,7 @@ Object {
   "graphUploaded": false,
   "message": "The following errors were found in the manifest.json file:
 
-      \`gtfsAndOsmUrls\` must be populated for graph build
+      \`routerFolderDownloads\` must be populated for graph build
 \`graphObjUrl\` must be an s3 url in order to upload Graph.obj file
 \`s3UploadPath\` must be defined if \`uploadGraphBuildLogs\` is set to true
 \`s3UploadPath\` must be defined if \`uploadGraphBuildReport\` is set to true
