@@ -83,6 +83,7 @@ Object {
   "graphBuilt": false,
   "graphUploaded": false,
   "message": "Failed to download file: s3://mock-bucket/failme.jar. Error: Error: mock download failure",
+  "nonce": "bad-jar-download-nonce",
   "numFilesDownloaded": 1,
   "pctProgress": 20,
   "serverStarted": false,

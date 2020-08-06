@@ -5,5 +5,6 @@
   "jarUrl": "s3://mock-bucket/failme.jar",
   "graphsFolder": "./temp-test-files/",
   "gtfsAndOsmUrls": ["s3://mock-bucket/gtfs.zip"],
+  "nonce": "bad-jar-download-nonce",
   "statusFileLocation": "./temp-test-files/status.json"
 }

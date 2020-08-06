@@ -43,6 +43,10 @@
       "description": "A url where the OTP jar can be downloaded from.",
       "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
     },
+    "nonce": {
+      "type": "string",
+      "description": "A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config."
+    },
     "otpRunnerLogFile": {
       "type": "string",
       "description": "The path where the otp-runner logs should be written to.",
