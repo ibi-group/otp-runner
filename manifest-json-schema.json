@@ -25,14 +25,6 @@
       "description": "The folder where the graphs should be stored.",
       "default": "/var/otp/graphs"
     },
-    "gtfsAndOsmUrls": {
-      "type": "array",
-      "description": "An array of GTFS and OSM urls that should be downloaded.",
-      "items": {
-        "type": "string",
-        "description": "Either a url or s3 url."
-      }
-    },
     "jarFile": {
       "type": "string",
       "description": "The full path to the OTP jar file.",
@@ -42,6 +34,10 @@
       "type": "string",
       "description": "A url where the OTP jar can be downloaded from.",
       "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
+    },
+    "nonce": {
+      "type": "string",
+      "description": "A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config."
     },
     "otpRunnerLogFile": {
       "type": "string",
@@ -56,6 +52,14 @@
     "routerConfigJSON": {
       "type": "string",
       "description": "The raw contents to write to the router-config.json file."
+    },
+    "routerFolderDownloads": {
+      "type": "array",
+      "description": "An array of urls that should be downloaded to the router folder. This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files.",
+      "items": {
+        "type": "string",
+        "description": "Either a url or s3 url."
+      }
     },
     "routerName": {
       "type": "string",
