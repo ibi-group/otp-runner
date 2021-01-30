@@ -48,18 +48,20 @@ It is possible to download files from AWS S3 as long as the proper AWS S3 url is
 
 | Key | Type | Required | Default | Description |
 | - | - | - | - | - |
+| baseFolder | string | Optional | /var/otp/graphs | The base directory for storing files. If `otpVersion` is set to 1.x, then an additional folder with the name set in `routerName` will be created and that additional folder will be where files are stored. If `otpVersion` is set to 2.x, then this folder will be used for storing files. |
+| baseFolderDownloads | array | Optional | | An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files. |
 | buildConfigJSON | string | Optional | | The raw contents to write to the build-config.json file. |
 | buildGraph | boolean | Optional | true | If true, run OpenTripPlanner in build mode. If this flag and the `runServer` flag are both false, an error will occur. |
 | buildLogFile | string | Optional | /var/log/otp-build.log | The path where the build logs should be written to. |
 | graphObjUrl | string | Optional | | A url where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to. |
-| graphsFolder | string | Optional | /var/otp/graphs | The folder where the graphs should be stored. |
+| gtfsDownloads | array | Optional | | An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). Each of these files will be prepended with the string `gtfs` in order for OTP 2.x to properly recognize the file as a valid GTFS file. |
 | jarFile | string | Optional | /opt/otp-1.4.0-shaded.jar | The full path to the OTP jar file. |
 | jarUrl | string | Optional | https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar | A url where the OTP jar can be downloaded from. |
 | nonce | string | Optional | | A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config. |
 | otpRunnerLogFile | string | Optional | /var/log/otp-runner.log | The path where the otp-runner logs should be written to. |
+| otpVersion | | Optional | 1.x | The major version of OTP that is being used. This is used in order to generate the appropriate command line parameters to run OTP with. Note that some 0.x versions of OTP might be compatible with the command line parameters generated for 1.x versions of OTP. |
 | prefixLogUploadsWithInstanceId | boolean | Optional | false | If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to s3. |
 | routerConfigJSON | string | Optional | | The raw contents to write to the router-config.json file. |
-| routerFolderDownloads | array | Optional | | An array of urls that should be downloaded to the router folder. This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files. |
 | routerName | string | Optional | default | The name of the OTP router. |
 | runServer | boolean | Optional | true | If true, run OTP as a server.  If this flag and the `buildGraph` flag are both false, an error will occur. |
 | s3UploadPath | string | Optional | | The base path of an s3 bucket where files will be uploaded to. Ex: `s3://bucket-name/folder` |

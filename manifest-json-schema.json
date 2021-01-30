@@ -2,6 +2,19 @@
   "title": "otp-runner manifest.json",
   "description": "A manifest for helping run OpenTripPlanner.",
   "properties": {
+    "baseFolder": {
+      "type": "string",
+      "description": "The base directory for storing files. If `otpVersion` is set to 1.x, then an additional folder with the name set in `routerName` will be created and that additional folder will be where files are stored. If `otpVersion` is set to 2.x, then this folder will be used for storing files.",
+      "default": "/var/otp/graphs"
+    },
+    "baseFolderDownloads": {
+      "type": "array",
+      "description": "An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files.",
+      "items": {
+        "type": "string",
+        "description": "Either a URL or AWS S3 URL."
+      }
+    },
     "buildConfigJSON": {
       "type": "string",
       "description": "The raw contents to write to the build-config.json file."
@@ -20,10 +33,13 @@
       "type": "string",
       "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to."
     },
-    "graphsFolder": {
-      "type": "string",
-      "description": "The folder where the graphs should be stored.",
-      "default": "/var/otp/graphs"
+    "gtfsDownloads": {
+      "type": "array",
+      "description": "An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). Each of these files will be prepended with the string `gtfs` in order for OTP 2.x to properly recognize the file as a valid GTFS file.",
+      "items": {
+        "type": "string",
+        "description": "Either a URL or AWS S3 URL."
+      }
     },
     "jarFile": {
       "type": "string",
@@ -44,6 +60,11 @@
       "description": "The path where the otp-runner logs should be written to.",
       "default": "/var/log/otp-runner.log"
     },
+    "otpVersion": {
+      "enum": ["1.x", "2.x"],
+      "default": "1.x",
+      "description": "The major version of OTP that is being used. This is used in order to generate the appropriate command line parameters to run OTP with. Note that some 0.x versions of OTP might be compatible with the command line parameters generated for 1.x versions of OTP."
+    },
     "prefixLogUploadsWithInstanceId": {
       "type": "boolean",
       "description": "If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to s3.",
@@ -52,14 +73,6 @@
     "routerConfigJSON": {
       "type": "string",
       "description": "The raw contents to write to the router-config.json file."
-    },
-    "routerFolderDownloads": {
-      "type": "array",
-      "description": "An array of urls that should be downloaded to the router folder. This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files.",
-      "items": {
-        "type": "string",
-        "description": "Either a url or s3 url."
-      }
     },
     "routerName": {
       "type": "string",

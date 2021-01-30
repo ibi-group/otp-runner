@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`otp-runner failures should fail if OTP server fails to read graph 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to read graph 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -13,9 +13,9 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if OTP server fails to read graph 2`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to read graph 2`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner failures should fail if OTP server fails to read graph 3`] = `
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to read graph 3`] = `
 "16:59:42.029 INFO (InputStreamGraphSource.java:177) Loading graph...
 16:59:42.493 ERROR (InputStreamGraphSource.java:181) Exception while loading graph 'default'.
 com.esotericsoftware.kryo.KryoException: Encountered unregistered class ID: 13994
@@ -26,7 +26,7 @@ com.esotericsoftware.kryo.KryoException: Encountered unregistered class ID: 1399
 16:59:45.811 INFO (GrizzlyServer.java:153) Grizzly server running."
 `;
 
-exports[`otp-runner failures should fail if OTP server fails to start 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to start 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -39,11 +39,11 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if OTP server fails to start 2`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to start 2`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner failures should fail if OTP server fails to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server fails to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
 
-exports[`otp-runner failures should fail if OTP server starts without loading a graph 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if OTP server starts without loading a graph 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -56,11 +56,11 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if OTP server starts without loading a graph 2`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server starts without loading a graph 2`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner failures should fail if OTP server starts without loading a graph 3`] = `"22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server starts without loading a graph 3`] = `"22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."`;
 
-exports[`otp-runner failures should fail if OTP server takes too long to start 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if OTP server takes too long to start 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -73,11 +73,11 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if OTP server takes too long to start 2`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server takes too long to start 2`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner failures should fail if OTP server takes too long to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
+exports[`otp-runner mocked runner tests failures should fail if OTP server takes too long to start 3`] = `"22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357"`;
 
-exports[`otp-runner failures should fail if a download fails 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if a download fails 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -91,7 +91,7 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if graph build succeeds, but graph upload fails 1`] = `
 Object {
   "error": true,
   "graphBuilt": true,
@@ -104,13 +104,13 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 2`] = `"{\\"htmlAnnotations\\": true}"`;
+exports[`otp-runner mocked runner tests failures should fail if graph build succeeds, but graph upload fails 2`] = `"{\\"htmlAnnotations\\": true}"`;
 
-exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 3`] = `"Mock building completed successfully!"`;
+exports[`otp-runner mocked runner tests failures should fail if graph build succeeds, but graph upload fails 3`] = `"Mock building completed successfully!"`;
 
-exports[`otp-runner failures should fail if graph build succeeds, but graph upload fails 4`] = `"mock graph build report"`;
+exports[`otp-runner mocked runner tests failures should fail if graph build succeeds, but graph upload fails 4`] = `"mock graph build report"`;
 
-exports[`otp-runner failures should fail if the graph build fails 1`] = `
+exports[`otp-runner mocked runner tests failures should fail if the graph build fails 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -123,9 +123,9 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail if the graph build fails 2`] = `"Mock building failed!"`;
+exports[`otp-runner mocked runner tests failures should fail if the graph build fails 2`] = `"Mock building failed!"`;
 
-exports[`otp-runner failures should fail with invalid manifest.json 1`] = `
+exports[`otp-runner mocked runner tests failures should fail with invalid manifest.json 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
@@ -138,14 +138,14 @@ Object {
 }
 `;
 
-exports[`otp-runner failures should fail with ok JSON schema, but improper config 1`] = `
+exports[`otp-runner mocked runner tests failures should fail with ok JSON schema, but improper config 1`] = `
 Object {
   "error": true,
   "graphBuilt": false,
   "graphUploaded": false,
   "message": "The following errors were found in the manifest.json file:
 
-      \`routerFolderDownloads\` must be populated for graph build (need inputs)
+      \`baseFolderDownloads\` or \`gtfsDownloads\` must be populated for graph build (need inputs)
 \`graphObjUrl\` must be an s3 url in order to upload Graph.obj file
 \`s3UploadPath\` must be defined if \`uploadGraphBuildLogs\` is set to true
 \`s3UploadPath\` must be defined if \`uploadGraphBuildReport\` is set to true
@@ -158,7 +158,7 @@ Object {
 }
 `;
 
-exports[`otp-runner successes should build a graph and start a server 1`] = `
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 1`] = `
 Object {
   "error": false,
   "graphBuilt": true,
@@ -171,22 +171,22 @@ Object {
 }
 `;
 
-exports[`otp-runner successes should build a graph and start a server 2`] = `"{\\"htmlAnnotations\\": true}"`;
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 2`] = `"{\\"htmlAnnotations\\": true}"`;
 
-exports[`otp-runner successes should build a graph and start a server 3`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 3`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner successes should build a graph and start a server 4`] = `"Mock building completed successfully!"`;
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 4`] = `"Mock building completed successfully!"`;
 
-exports[`otp-runner successes should build a graph and start a server 5`] = `
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 5`] = `
 "22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357
 22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
 `;
 
-exports[`otp-runner successes should build a graph and start a server 6`] = `"mock graph"`;
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 6`] = `"mock graph"`;
 
-exports[`otp-runner successes should build a graph and start a server 7`] = `"mock graph build report"`;
+exports[`otp-runner mocked runner tests successes should build a graph and start a server 7`] = `"mock graph build report"`;
 
-exports[`otp-runner successes should build a graph only 1`] = `
+exports[`otp-runner mocked runner tests successes should build a graph only 1`] = `
 Object {
   "error": false,
   "graphBuilt": true,
@@ -199,15 +199,15 @@ Object {
 }
 `;
 
-exports[`otp-runner successes should build a graph only 2`] = `"{\\"htmlAnnotations\\": true}"`;
+exports[`otp-runner mocked runner tests successes should build a graph only 2`] = `"{\\"htmlAnnotations\\": true}"`;
 
-exports[`otp-runner successes should build a graph only 3`] = `"Mock building completed successfully!"`;
+exports[`otp-runner mocked runner tests successes should build a graph only 3`] = `"Mock building completed successfully!"`;
 
-exports[`otp-runner successes should build a graph only 4`] = `"mock graph"`;
+exports[`otp-runner mocked runner tests successes should build a graph only 4`] = `"mock graph"`;
 
-exports[`otp-runner successes should build a graph only 5`] = `"mock graph build report"`;
+exports[`otp-runner mocked runner tests successes should build a graph only 5`] = `"mock graph build report"`;
 
-exports[`otp-runner successes should download a graph and start OTP server 1`] = `
+exports[`otp-runner mocked runner tests successes should download a graph and start OTP server 1`] = `
 Object {
   "error": false,
   "graphBuilt": false,
@@ -220,9 +220,81 @@ Object {
 }
 `;
 
-exports[`otp-runner successes should download a graph and start OTP server 2`] = `"{\\"timeout\\": 4}"`;
+exports[`otp-runner mocked runner tests successes should download a graph and start OTP server 2`] = `"{\\"timeout\\": 4}"`;
 
-exports[`otp-runner successes should download a graph and start OTP server 3`] = `
+exports[`otp-runner mocked runner tests successes should download a graph and start OTP server 3`] = `
 "22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357
 22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 1`] = `
+Object {
+  "error": false,
+  "graphBuilt": true,
+  "graphUploaded": true,
+  "message": "Server successfully started!",
+  "numFilesDownloaded": 2,
+  "pctProgress": 90,
+  "serverStarted": true,
+  "totalFilesToDownload": 2,
+}
+`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 2`] = `"{\\"htmlAnnotations\\": true}"`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 3`] = `"{\\"timeout\\": 4}"`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 4`] = `"Mock building completed successfully!"`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 5`] = `
+"22:10:49.222 INFO (Graph.java:731) Graph read. |V|=156146 |E|=397357
+22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
+`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 6`] = `"mock graph"`;
+
+exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 7`] = `"mock graph build report"`;
+
+exports[`otp-runner unit tests should generate 1.x build cli arguments 1`] = `
+Array [
+  "-jar",
+  "-Xmx7902848k",
+  "./temp-test-files/ok.jar",
+  "--build",
+  "temp-test-files/default",
+]
+`;
+
+exports[`otp-runner unit tests should generate 1.x serve cli arguments 1`] = `
+Array [
+  "-jar",
+  "-Xmx7902848k",
+  "./temp-test-files/ok.jar",
+  "--server",
+  "--graphs",
+  "./temp-test-files/",
+  "--router",
+  "default",
+]
+`;
+
+exports[`otp-runner unit tests should generate 2.x build cli arguments 1`] = `
+Array [
+  "-jar",
+  "-Xmx7902848k",
+  "./temp-test-files/ok.jar",
+  "--build",
+  "--save",
+  "./temp-test-files/",
+]
+`;
+
+exports[`otp-runner unit tests should generate 2.x serve cli arguments 1`] = `
+Array [
+  "-jar",
+  "-Xmx7902848k",
+  "./temp-test-files/ok.jar",
+  "--load",
+  "./temp-test-files/",
+]
 `;

@@ -81,27 +81,34 @@ function getS3Uploads () {
  *  setup that successfully "runs" by writing a Graph.obj file, a graph report
  *  and mock logging success
  */
-function mockOTPGraphBuild (shouldPass = false) {
+function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
+  const javaArgs = [
+    '-jar',
+    '-Xmx7902848k'
+  ]
+  const baseFolder = otpV2
+    ? 'temp-test-files/otp2-base-folder'
+    : 'temp-test-files/default'
+  if (otpV2) {
+    javaArgs.push('./temp-test-files/ok-otp-2.jar')
+    javaArgs.push('--build')
+    javaArgs.push('--save')
+    javaArgs.push(`./${baseFolder}`)
+  } else {
+    javaArgs.push('./temp-test-files/ok.jar')
+    javaArgs.push('--build')
+    javaArgs.push(baseFolder)
+  }
   addCustomExecaMock({
-    args: [
-      'java',
-      [
-        '-jar',
-        '-Xmx7902848k',
-        './temp-test-files/ok.jar',
-        '--build',
-        'temp-test-files/default'
-      ],
-      { all: true }
-    ],
+    args: ['java', javaArgs, { all: true }],
     fn: () => {
       if (shouldPass) {
         // write a mock graph to file
-        fs.writeFileSync('./temp-test-files/default/Graph.obj', 'mock graph')
+        fs.writeFileSync(`./${baseFolder}/Graph.obj`, 'mock graph')
 
         // write a mock graph build report to file
         fs.writeFileSync(
-          './temp-test-files/default/report',
+          `./${baseFolder}/report`,
           'mock graph build report'
         )
       }
@@ -141,26 +148,35 @@ function mockOTPServerStart ({
   customLogs,
   exitCode,
   graphLoad,
+  otpV2,
   serverStarts
 }) {
+  const javaArgs = [
+    '-jar',
+    '-Xmx7902848k'
+  ]
+  if (otpV2) {
+    javaArgs.push('./temp-test-files/ok-otp-2.jar')
+    javaArgs.push('--load')
+    javaArgs.push('./temp-test-files/otp2-base-folder')
+  } else {
+    javaArgs.push('./temp-test-files/ok.jar')
+    javaArgs.push('--server')
+    javaArgs.push('--graphs')
+    javaArgs.push('./temp-test-files/')
+    javaArgs.push('--router')
+    javaArgs.push('default')
+  }
   addCustomSpawnMock({
-    args: [
-      'java',
-      [
-        '-jar',
-        '-Xmx7902848k',
-        './temp-test-files/ok.jar',
-        '--server',
-        '--graphs',
-        './temp-test-files/',
-        '--router',
-        'default'
-      ]
-    ],
+    args: ['java', javaArgs],
     fn: () => {
       const logs = []
       if (graphLoad) {
-        logs.push('22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357')
+        if (otpV2) {
+          logs.push('22:10:49.222 INFO (Graph.java:731) Graph read. |V|=156146 |E|=397357')
+        } else {
+          logs.push('22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357')
+        }
       }
       if (serverStarts) {
         logs.push('22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running.')
@@ -183,23 +199,21 @@ function mockOTPServerStart ({
 /**
  * A helper for mocking the zipping up of the graph build report
  */
-function mockZippingGraphBuildReport () {
+function mockZippingGraphBuildReport (otpV2 = false) {
+  let baseFolder, cwd
+  if (otpV2) {
+    baseFolder = './temp-test-files/otp2-base-folder/'
+    cwd = './temp-test-files/otp2-base-folder'
+  } else {
+    baseFolder = './temp-test-files/default/'
+    cwd = 'temp-test-files/default'
+  }
   addCustomExecaMock({
-    args: [
-      'zip',
-      [
-        '-r',
-        'report.zip',
-        'report'
-      ],
-      {
-        cwd: 'temp-test-files/default'
-      }
-    ],
+    args: ['zip', ['-r', 'report.zip', 'report'], { cwd }],
     fn: async () => {
       await fs.writeFile(
-        './temp-test-files/default/report.zip',
-        await fs.readFile('./temp-test-files/default/report')
+        `${baseFolder}report.zip`,
+        await fs.readFile(`${baseFolder}report`)
       )
     }
   })
