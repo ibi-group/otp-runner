@@ -104,7 +104,10 @@ function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
     fn: () => {
       if (shouldPass) {
         // write a mock graph to file
-        fs.writeFileSync(`./${baseFolder}/Graph.obj`, 'mock graph')
+        fs.writeFileSync(
+          `./${baseFolder}/${otpV2 ? 'graph.obj' : 'Graph.obj'}`,
+          'mock graph'
+        )
 
         // write a mock graph build report to file
         fs.writeFileSync(
