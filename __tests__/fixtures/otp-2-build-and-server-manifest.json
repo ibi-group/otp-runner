@@ -6,7 +6,7 @@
   "gtfsDownloads": ["s3://mock-bucket/gtfs.zip"],
   "jarFile": "./temp-test-files/ok-otp-2.jar",
   "jarUrl": "s3://mock-bucket/ok-otp-2.jar",
-  "graphObjUrl": "s3://mock-bucket/Graph.obj",
+  "graphObjUrl": "s3://mock-bucket/graph.obj",
   "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
   "otpVersion": "2.x",
   "routerConfigJSON": "{\"timeout\": 4}",

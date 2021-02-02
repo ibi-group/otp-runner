@@ -273,8 +273,8 @@ describe('otp-runner', () => {
 
         // simulate s3 upload of Graph.obj
         mockLocalToS3Transfer(
-          'Graph.obj',
-          'temp-test-files/otp2-base-folder/Graph.obj'
+          'graph.obj',
+          'temp-test-files/otp2-base-folder/graph.obj'
         )
 
         // simulate s3 upload of graph build report
@@ -308,7 +308,7 @@ describe('otp-runner', () => {
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
-        await expect(s3uploads['s3://mock-bucket/Graph.obj']).toMatchSnapshot()
+        await expect(s3uploads['s3://mock-bucket/graph.obj']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/graph-build-report.zip']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
         await expect(s3uploads['s3://mock-bucket/otp-runner.log']).toContain('INFO  Server successfully started!')
