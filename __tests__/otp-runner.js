@@ -67,7 +67,7 @@ const tempFileDir = './temp-test-files'
 // - a custom mock of the invocation of the execa module (typically to model a
 //     failed AWS S3 transfer)
 //
-// otp-runner is ran with the given manifest and either an asertion is made for
+// otp-runner is ran with the given manifest and either an assertion is made for
 // whether the script is expected to succeed or fail. Also, the status file is
 // snapshotted after otp-runner finishes to make sure it matches expectations.
 //

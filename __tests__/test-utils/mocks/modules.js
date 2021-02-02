@@ -46,7 +46,7 @@ jest.mock('execa', () => {
 })
 
 /**
- * Add a new configuraion for a custom execa process to be mocked.
+ * Add a new configuration for a custom execa process to be mocked.
  * @param {object} mock an object with the keys `args` and `fn`.
  */
 function addCustomExecaMock (mock) {
@@ -85,7 +85,7 @@ jest.mock('child_process', () => {
 })
 
 /**
- * Add a new configuraion for a custom spawn process to be mocked.
+ * Add a new configuration for a custom spawn process to be mocked.
  * @param {object} mock an object with the keys `args` and `fn`.
  */
 function addCustomSpawnMock (mock) {
