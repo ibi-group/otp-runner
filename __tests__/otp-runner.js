@@ -136,10 +136,10 @@ describe('otp-runner', () => {
       it('should build a graph only', async () => {
         // add to mocked commands to achieve desired return
 
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer('gtfs.zip', 'temp-test-files/default/gtfs.zip')
 
         // simulate successful graph build and write a few items to build log
@@ -148,19 +148,19 @@ describe('otp-runner', () => {
         // simulate zipping up of graph build report
         mockZippingGraphBuildReport()
 
-        // simulate s3 upload of build logs
+        // simulate AWS S3 upload of build logs
         mockLocalToS3Transfer('otp-build.log')
 
-        // simulate s3 upload of Graph.obj
+        // simulate AWS S3 upload of Graph.obj
         mockLocalToS3Transfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
-        // simulate s3 upload of graph build report
+        // simulate AWS S3 upload of graph build report
         mockLocalToS3Transfer(
           'graph-build-report.zip',
           'temp-test-files/default/report.zip'
         )
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -171,7 +171,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/build-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/Graph.obj']).toMatchSnapshot()
@@ -183,10 +183,10 @@ describe('otp-runner', () => {
       it('should build a graph and start a server', async () => {
         // add to mocked commands to achieve desired return
 
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer('gtfs.zip', 'temp-test-files/default/gtfs.zip')
 
         // simulate successful graph build and write a few items to build log
@@ -202,19 +202,19 @@ describe('otp-runner', () => {
           serverStarts: true
         })
 
-        // simulate s3 upload of build logs
+        // simulate AWS S3 upload of build logs
         mockLocalToS3Transfer('otp-build.log')
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of Graph.obj
+        // simulate AWS S3 upload of Graph.obj
         mockLocalToS3Transfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
-        // simulate s3 upload of graph build report
+        // simulate AWS S3 upload of graph build report
         mockLocalToS3Transfer('graph-build-report.zip', 'temp-test-files/default/report.zip')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -229,7 +229,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
@@ -242,13 +242,13 @@ describe('otp-runner', () => {
       it('should use otp 2.x to build a graph and start a server', async () => {
         // add to mocked commands to achieve desired return
 
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok-otp-2.jar')
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer(
           'gtfs.zip',
-          'temp-test-files/otp2-base-folder/gtfs-gtfs.zip'
+          'temp-test-files/otp2-base-folder/gtfs.zip'
         )
 
         // simulate successful graph build and write a few items to build log
@@ -265,25 +265,25 @@ describe('otp-runner', () => {
           serverStarts: true
         })
 
-        // simulate s3 upload of build logs
+        // simulate AWS S3 upload of build logs
         mockLocalToS3Transfer('otp-build.log')
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of Graph.obj
+        // simulate AWS S3 upload of Graph.obj
         mockLocalToS3Transfer(
           'graph.obj',
           'temp-test-files/otp2-base-folder/graph.obj'
         )
 
-        // simulate s3 upload of graph build report
+        // simulate AWS S3 upload of graph build report
         mockLocalToS3Transfer(
           'graph-build-report.zip',
           'temp-test-files/otp2-base-folder/report.zip'
         )
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -304,7 +304,7 @@ describe('otp-runner', () => {
           )
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
@@ -315,10 +315,10 @@ describe('otp-runner', () => {
       })
 
       it('should download a graph and start OTP server', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of Graph.obj from s3
+        // simulate successful download of Graph.obj from AWS S3
         mockS3ToLocalTransfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
         // simulate successful server startup
@@ -330,13 +330,13 @@ describe('otp-runner', () => {
 
         const mockInstanceId = 'i-123456'
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockS3Transfer(
           './temp-test-files/otp-server.log',
           `s3://mock-bucket/${mockInstanceId}-otp-server.log`
         )
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockS3Transfer(
           './temp-test-files/otp-runner.log',
           `s3://mock-bucket/${mockInstanceId}-otp-runner.log`
@@ -355,7 +355,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads[`s3://mock-bucket/${mockInstanceId}-otp-server.log`]).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
@@ -388,32 +388,32 @@ describe('otp-runner', () => {
           }
         })
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer('gtfs.zip', 'temp-test-files/default/gtfs.zip')
 
         await runOtpRunner('./fixtures/bad-jar-download.json', true)
       })
 
       it('should fail if the graph build fails', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer('gtfs.zip', 'temp-test-files/default/gtfs.zip')
 
         // simulate successful graph build and write a few items to build log
         mockOTPGraphBuild(false)
 
-        // simulate s3 upload of build logs
+        // simulate AWS S3 upload of build logs
         mockLocalToS3Transfer('otp-build.log')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
         await runOtpRunner('./fixtures/build-and-server-manifest.json', true)
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
@@ -423,10 +423,10 @@ describe('otp-runner', () => {
       it('should fail if graph build succeeds, but graph upload fails', async () => {
         // add to mocked commands to achieve desired return
 
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of GTFS zip file from s3
+        // simulate successful download of GTFS zip file from AWS S3
         mockS3ToLocalTransfer('gtfs.zip', 'temp-test-files/default/gtfs.zip')
 
         // simulate successful graph build and write a few items to build log
@@ -435,13 +435,13 @@ describe('otp-runner', () => {
         // simulate zipping up of graph build report
         mockZippingGraphBuildReport()
 
-        // simulate s3 upload of build logs
+        // simulate AWS S3 upload of build logs
         mockLocalToS3Transfer('otp-build.log')
 
-        // simulate s3 upload of graph build report
+        // simulate AWS S3 upload of graph build report
         mockLocalToS3Transfer('graph-build-report.zip', 'temp-test-files/default/report.zip')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // simulate failure of graph upload
@@ -468,7 +468,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/build-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-build.log']).toMatchSnapshot()
         await expect(s3uploads['s3://mock-bucket/Graph.obj']).not.toBeDefined()
@@ -478,10 +478,10 @@ describe('otp-runner', () => {
       })
 
       it('should fail if OTP server starts without loading a graph', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of Graph.obj from s3
+        // simulate successful download of Graph.obj from AWS S3
         mockS3ToLocalTransfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
         // simulate successful server startup
@@ -491,10 +491,10 @@ describe('otp-runner', () => {
           serverStarts: true
         })
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -505,7 +505,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
@@ -513,10 +513,10 @@ describe('otp-runner', () => {
       })
 
       it('should fail if OTP server fails to start', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of Graph.obj from s3
+        // simulate successful download of Graph.obj from AWS S3
         mockS3ToLocalTransfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
         // simulate successful server startup
@@ -526,10 +526,10 @@ describe('otp-runner', () => {
           serverStarts: false
         })
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -540,7 +540,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
@@ -548,10 +548,10 @@ describe('otp-runner', () => {
       })
 
       it('should fail if OTP server takes too long to start', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of Graph.obj from s3
+        // simulate successful download of Graph.obj from AWS S3
         mockS3ToLocalTransfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
         // simulate successful server startup
@@ -561,10 +561,10 @@ describe('otp-runner', () => {
           serverStarts: false
         })
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -575,7 +575,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps
@@ -583,10 +583,10 @@ describe('otp-runner', () => {
       })
 
       it('should fail if OTP server fails to read graph', async () => {
-        // simulate successful download of jar from s3
+        // simulate successful download of jar from AWS S3
         mockS3ToLocalTransfer('ok.jar')
 
-        // simulate successful download of Graph.obj from s3
+        // simulate successful download of Graph.obj from AWS S3
         mockS3ToLocalTransfer('Graph.obj', 'temp-test-files/default/Graph.obj')
 
         // simulate successful server startup, but with failed graph read
@@ -605,10 +605,10 @@ describe('otp-runner', () => {
           exitCode: null
         })
 
-        // simulate s3 upload of server logs
+        // simulate AWS S3 upload of server logs
         mockLocalToS3Transfer('otp-server.log')
 
-        // simulate s3 upload of otp-runner.log
+        // simulate AWS S3 upload of otp-runner.log
         mockLocalToS3Transfer('otp-runner.log')
 
         // run otp-runner
@@ -619,7 +619,7 @@ describe('otp-runner', () => {
           await fs.readFile('./temp-test-files/default/router-config.json', 'UTF-8')
         ).toMatchSnapshot()
 
-        // verify that various files were mock-uploaded to s3
+        // verify that various files were mock-uploaded to AWS S3
         const s3uploads = getS3Uploads()
         await expect(s3uploads['s3://mock-bucket/otp-server.log']).toMatchSnapshot()
         // don't snapshot otp-runner due to differing timestamps

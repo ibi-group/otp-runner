@@ -1,7 +1,7 @@
 {
   "buildGraph": true,
   "jarFile": "./temp-test-files/ok.jar",
-  "jarUrl": "s3://ok.jar",
+  "jarUri": "s3://ok.jar",
   "statusFileLocation": "./temp-test-files/status.json",
   "uploadGraphBuildLogs": true,
   "uploadGraphBuildReport": true,

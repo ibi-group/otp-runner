@@ -11,8 +11,8 @@ const { addCustomExecaMock, addCustomSpawnMock } = require('./modules')
 let s3uploads = {}
 
 /**
- * Adds a mocks of an s3 transfer. If the destination of the file is an s3
- * bucket, the contents of the source file will be copied to the s3uploads
+ * Adds a mocks of an AWS S3 transfer. If the destination of the file is an AWS
+ * S3 URI, the contents of the source file will be copied to the s3uploads
  * variable for future verification.
  *
  * @param  {string} src the source file
@@ -22,7 +22,7 @@ function mockS3Transfer (src, dst) {
   addCustomExecaMock({
     args: ['aws', ['s3', 'cp', src, dst]],
     fn: async () => {
-      // if the destination is an s3 bucket, simulate the upload by storing the
+      // if the destination is an AWS S3 URI, simulate the upload by storing the
       // contents of the file as uploaded in a lookup table
       if (dst.startsWith('s3:')) {
         s3uploads[dst] = await fs.readFile(src, 'UTF-8')
@@ -32,14 +32,14 @@ function mockS3Transfer (src, dst) {
 }
 
 /**
- * Shorthand function to create a mock for an aws s3 cp operation that transfers
- * a file from the local machine to s3. This assumes the default s3 bucket and
- * default local temp test files location are used, unless the localPath
- * argument is also provided.
+ * Shorthand function to create a mock for an AWS S3 cp operation that transfers
+ * a file from the local machine to AWS S3. This assumes the default AWS S3
+ * bucket and default local temp test files location are used, unless the
+ * localPath argument is also provided.
  *
  * @param  {String} filename The filename without paths to transfer. It is
  *    assumed that this filename is present in the ./temp-test-files folder and
- *    that the file should be uploaded to the s3://mock-bucket s3 bucket.
+ *    that the file should be uploaded to the s3://mock-bucket AWS S3 bucket.
  * @param  {String} [localPath] If provided, use this path instead of just the
  *    temp-test-files folder plus the filename.
  */
@@ -50,14 +50,15 @@ function mockLocalToS3Transfer (filename, localPath) {
 }
 
 /**
- * Shorthand function to create a mock for an aws s3 cp operation that transfers
- * a file from s3 to the local machine. This assumes the default s3 bucket and
- * default local temp test files location are used, unless the localPath
- * argument is also provided.
+ * Shorthand function to create a mock for an AWS S3 cp operation that transfers
+ * a file from AWS S3 to the local machine. This assumes the default AWS S3
+ * bucket and default local temp test files location are used, unless the
+ * localPath argument is also provided.
  *
  * @param  {String} filename The filename without paths to transfer. It is
- *    assumed that this filename is present in the s3://mock-bucket s3 bucket
- *    and that the file should be downloaded into the ./temp-test-files folder.
+ *    assumed that this filename is present in the s3://mock-bucket AWS S3
+ *    bucket and that the file should be downloaded into the ./temp-test-files
+ *    folder.
  * @param  {String} [localPath] If provided, use this path instead of just the
  *    temp-test-files folder plus the filename.
  */
@@ -69,7 +70,7 @@ function mockS3ToLocalTransfer (filename, localPath) {
 }
 
 /**
- * Returns the map of files that have been "mock uploaded" to s3
+ * Returns the map of files that have been "mock uploaded" to AWS S3
  */
 function getS3Uploads () {
   return s3uploads

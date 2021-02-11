@@ -9,10 +9,22 @@
     },
     "baseFolderDownloads": {
       "type": "array",
-      "description": "An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files.",
+      "description": "An array of items that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files. Each item must be an object. Each item must have the `uri` property which must be either an HTTP(S) URL or AWS S3 URI. Each item can optionally have a `name` property which will be the name that the file will be given when it is downloaded. If `name` is omitted, then the filename will be whatever is after the final forward slash in the `uri` field.",
       "items": {
-        "type": "string",
-        "description": "Either a URL or AWS S3 URL."
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "The name of the file that should be saved in the base downloads folder."
+          },
+          "uri": {
+            "type": "string",
+            "description": "Either a HTTP(S) URL or AWS S3 URI."
+          }
+        },
+        "required": [
+          "uri"
+        ]
       }
     },
     "buildConfigJSON": {
@@ -29,26 +41,18 @@
       "description": "The path where the build logs should be written to.",
       "default": "/var/log/otp-build.log"
     },
-    "graphObjUrl": {
+    "graphObjUri": {
       "type": "string",
-      "description": "A url where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to."
-    },
-    "gtfsDownloads": {
-      "type": "array",
-      "description": "An array of URLs that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). Each of these files will be prepended with the string `gtfs` in order for OTP 2.x to properly recognize the file as a valid GTFS file.",
-      "items": {
-        "type": "string",
-        "description": "Either a URL or AWS S3 URL."
-      }
+      "description": "Either an HTTP(S) URL or AWS S3 URI where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an AWS S3 URI that can be uploaded to."
     },
     "jarFile": {
       "type": "string",
       "description": "The full path to the OTP jar file.",
       "default": "/opt/otp-1.4.0-shaded.jar"
     },
-    "jarUrl": {
+    "jarUri": {
       "type": "string",
-      "description": "A url where the OTP jar can be downloaded from.",
+      "description": "Either an HTTP(S) URL or AWS S3 URI where the OTP jar can be downloaded from.",
       "default": "https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar"
     },
     "nonce": {
@@ -67,7 +71,7 @@
     },
     "prefixLogUploadsWithInstanceId": {
       "type": "boolean",
-      "description": "If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to s3.",
+      "description": "If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to AWS S3.",
       "default": false
     },
     "routerConfigJSON": {
@@ -86,7 +90,7 @@
     },
     "s3UploadPath": {
       "type": "string",
-      "description": "The base path of an s3 bucket where files will be uploaded to. Ex: `s3://bucket-name/folder`"
+      "description": "The base AWS S3 URI of where files will be uploaded to. Ex: `s3://bucket-name/folder`"
     },
     "serverLogFile": {
       "type": "string",
@@ -105,27 +109,27 @@
     },
     "uploadGraphBuildLogs": {
       "type": "boolean",
-      "description": "If true, the logs from a graph build will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-build.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
+      "description": "If true, the logs from a graph build will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-build.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadGraphBuildReport": {
       "type": "boolean",
-      "description": "If true, the OTP-generated graph build report will be zipped up and uploaded to the provided s3 bucket to the path `${s3UploadPath}/graph-build-report.zip`. Note: if this is set to true, `s3UploadPath` must be defined.",
+      "description": "If true, the OTP-generated graph build report will be zipped up and uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/graph-build-report.zip`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadGraph": {
       "type": "boolean",
-      "description": "If true, the Graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUrl` must be defined and be a valid AWS s3 path.",
+      "description": "If true, the Graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUri` must be defined and be a valid AWS S3 URI.",
       "default": false
     },
     "uploadOtpRunnerLogs": {
       "type": "boolean",
-      "description": "If true, the logs from the otp-runner script will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-runner.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
+      "description": "If true, the logs from the otp-runner script will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-runner.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     },
     "uploadServerStartupLogs": {
       "type": "boolean",
-      "description": "If true, the logs from the server startup will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-server.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
+      "description": "If true, the logs from the server startup will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-server.log`. Note: if this is set to true, `s3UploadPath` must be defined.",
       "default": false
     }
   }

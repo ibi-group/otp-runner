@@ -145,8 +145,8 @@ Object {
   "graphUploaded": false,
   "message": "The following errors were found in the manifest.json file:
 
-      \`baseFolderDownloads\` or \`gtfsDownloads\` must be populated for graph build (need inputs)
-\`graphObjUrl\` must be an s3 url in order to upload Graph.obj file
+      \`baseFolderDownloads\` must be populated for graph build (need inputs)
+\`graphObjUri\` must be an AWS S3 URI in order to upload Graph.obj file
 \`s3UploadPath\` must be defined if \`uploadGraphBuildLogs\` is set to true
 \`s3UploadPath\` must be defined if \`uploadGraphBuildReport\` is set to true
 \`s3UploadPath\` must be defined if \`uploadOtpRunnerLogs\` is set to true
