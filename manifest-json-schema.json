@@ -4,7 +4,7 @@
   "properties": {
     "baseFolder": {
       "type": "string",
-      "description": "The base directory for storing files. If `otpVersion` is set to 1.x, then an additional folder with the name set in `routerName` will be created and that additional folder will be where files are stored. If `otpVersion` is set to 2.x, then this folder will be used for storing files.",
+      "description": "The base directory for storing files. If `otpVersion` is set to `1.x`, then an additional folder inside the base folder will be written with the name found in the manifest value `routerName` and that additional folder will be where files are stored (for example `/var/otp/graphs/default`). If `otpVersion` is set to 2.x, then this folder itself will be used for storing files.",
       "default": "/var/otp/graphs"
     },
     "baseFolderDownloads": {
@@ -67,7 +67,7 @@
     "otpVersion": {
       "enum": ["1.x", "2.x"],
       "default": "1.x",
-      "description": "The major version of OTP that is being used. This is used in order to generate the appropriate command line parameters to run OTP with. Note that some 0.x versions of OTP might be compatible with the command line parameters generated for 1.x versions of OTP."
+      "description": "The major version of OTP that is being used. Must be either `1.x` or `2.x`. This is used in order to generate the appropriate command line parameters to run OTP with."
     },
     "prefixLogUploadsWithInstanceId": {
       "type": "boolean",

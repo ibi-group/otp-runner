@@ -2,6 +2,7 @@ const { Readable } = require('stream')
 
 const fs = require('fs-extra')
 
+const { TEMP_TEST_FOLDER } = require('../constants')
 const { addCustomExecaMock, addCustomSpawnMock } = require('./modules')
 
 /**
@@ -38,13 +39,13 @@ function mockS3Transfer (src, dst) {
  * localPath argument is also provided.
  *
  * @param  {String} filename The filename without paths to transfer. It is
- *    assumed that this filename is present in the ./temp-test-files folder and
+ *    assumed that this filename is present in the temp test folder and
  *    that the file should be uploaded to the s3://mock-bucket AWS S3 bucket.
  * @param  {String} [localPath] If provided, use this path instead of just the
- *    temp-test-files folder plus the filename.
+ *    temp test folder plus the filename.
  */
 function mockLocalToS3Transfer (filename, localPath) {
-  const src = localPath || `./temp-test-files/${filename}`
+  const src = localPath || `./${TEMP_TEST_FOLDER}/${filename}`
   const dst = `s3://mock-bucket/${filename}`
   mockS3Transfer(src, dst)
 }
@@ -57,15 +58,14 @@ function mockLocalToS3Transfer (filename, localPath) {
  *
  * @param  {String} filename The filename without paths to transfer. It is
  *    assumed that this filename is present in the s3://mock-bucket AWS S3
- *    bucket and that the file should be downloaded into the ./temp-test-files
- *    folder.
+ *    bucket and that the file should be downloaded into the temp test folder.
  * @param  {String} [localPath] If provided, use this path instead of just the
- *    temp-test-files folder plus the filename.
+ *    temp test folder plus the filename.
  */
 function mockS3ToLocalTransfer (filename, localPath) {
   mockS3Transfer(
     `s3://mock-bucket/${filename}`,
-    localPath || `./temp-test-files/${filename}`
+    localPath || `./${TEMP_TEST_FOLDER}/${filename}`
   )
 }
 
@@ -88,15 +88,15 @@ function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
     '-Xmx7902848k'
   ]
   const baseFolder = otpV2
-    ? 'temp-test-files/otp2-base-folder'
-    : 'temp-test-files/default'
+    ? `${TEMP_TEST_FOLDER}/otp2-base-folder`
+    : `${TEMP_TEST_FOLDER}/default`
   if (otpV2) {
-    javaArgs.push('./temp-test-files/ok-otp-2.jar')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
     javaArgs.push('--build')
     javaArgs.push('--save')
     javaArgs.push(`./${baseFolder}`)
   } else {
-    javaArgs.push('./temp-test-files/ok.jar')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok.jar`)
     javaArgs.push('--build')
     javaArgs.push(baseFolder)
   }
@@ -160,14 +160,14 @@ function mockOTPServerStart ({
     '-Xmx7902848k'
   ]
   if (otpV2) {
-    javaArgs.push('./temp-test-files/ok-otp-2.jar')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
     javaArgs.push('--load')
-    javaArgs.push('./temp-test-files/otp2-base-folder')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/otp2-base-folder`)
   } else {
-    javaArgs.push('./temp-test-files/ok.jar')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok.jar`)
     javaArgs.push('--server')
     javaArgs.push('--graphs')
-    javaArgs.push('./temp-test-files/')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/`)
     javaArgs.push('--router')
     javaArgs.push('default')
   }
@@ -187,7 +187,7 @@ function mockOTPServerStart ({
       }
 
       fs.writeFileSync(
-        './temp-test-files/otp-server.log',
+        `./${TEMP_TEST_FOLDER}/otp-server.log`,
         customLogs || logs.join('\n')
       )
       return {
@@ -206,18 +206,18 @@ function mockOTPServerStart ({
 function mockZippingGraphBuildReport (otpV2 = false) {
   let baseFolder, cwd
   if (otpV2) {
-    baseFolder = './temp-test-files/otp2-base-folder/'
-    cwd = './temp-test-files/otp2-base-folder'
+    baseFolder = `./${TEMP_TEST_FOLDER}/otp2-base-folder`
+    cwd = `./${TEMP_TEST_FOLDER}/otp2-base-folder`
   } else {
-    baseFolder = './temp-test-files/default/'
-    cwd = 'temp-test-files/default'
+    baseFolder = `./${TEMP_TEST_FOLDER}/default`
+    cwd = `${TEMP_TEST_FOLDER}/default`
   }
   addCustomExecaMock({
     args: ['zip', ['-r', 'report.zip', 'report'], { cwd }],
     fn: async () => {
       await fs.writeFile(
-        `${baseFolder}report.zip`,
-        await fs.readFile(`${baseFolder}report`)
+        `${baseFolder}/report.zip`,
+        await fs.readFile(`${baseFolder}/report`)
       )
     }
   })
