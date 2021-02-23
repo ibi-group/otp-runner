@@ -1,6 +1,6 @@
 {
   "baseFolderDownloads": [
-    "https://www.ripta.com/wp-content/uploads/2021/01/google_transit.zip",
-    "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf"
+    { "uri": "https://www.ripta.com/wp-content/uploads/2021/01/google_transit.zip" },
+    { "uri": "https://download.geofabrik.de/north-america/us/rhode-island-latest.osm.pbf" }
   ]
 }
