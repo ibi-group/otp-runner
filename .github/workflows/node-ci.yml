@@ -1,0 +1,27 @@
+name: Node.js CI
+
+on: pull_request
+
+jobs:
+  test-build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Use Node.js 12.x
+        uses: actions/setup-node@v1
+        with:
+          node-version: 12.x
+      - name: Install npm packages using cache
+        uses: bahmutov/npm-install@v1
+      - name: Verify README up-to-date
+        run: yarn verify-readme-up-to-date
+      - name: Lint code
+        run: yarn lint
+      - name: Run tests
+        run: yarn jest
+
+      # at this point, the build is successful
+      - name: Codecov
+        uses: codecov/codecov-action@v1.2.0
+        continue-on-error: true

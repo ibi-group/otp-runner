@@ -48,26 +48,27 @@ It is possible to download files from AWS S3 as long as the proper AWS S3 url is
 
 | Key | Type | Required | Default | Description |
 | - | - | - | - | - |
+| baseFolder | string | Optional | /var/otp/graphs | The base directory for storing files. If `otpVersion` is set to `1.x`, then an additional folder inside the base folder will be written with the name found in the manifest value `routerName` and that additional folder will be where files are stored (for example `/var/otp/graphs/default`). If `otpVersion` is set to 2.x, then this folder itself will be used for storing files. |
+| baseFolderDownloads | array | Optional | | An array of items that should be downloaded to the base folder (see description in `baseFolder` for what this folder will be). This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files. Each item must be an object. Each item must have the `uri` property which must be either an HTTP(S) URL or AWS S3 URI. Each item can optionally have a `name` property which will be the name that the file will be given when it is downloaded. If `name` is omitted, then the filename will be whatever is after the final forward slash in the `uri` field. |
 | buildConfigJSON | string | Optional | | The raw contents to write to the build-config.json file. |
 | buildGraph | boolean | Optional | true | If true, run OpenTripPlanner in build mode. If this flag and the `runServer` flag are both false, an error will occur. |
 | buildLogFile | string | Optional | /var/log/otp-build.log | The path where the build logs should be written to. |
-| graphObjUrl | string | Optional | | A url where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an s3 url that can be uploaded to. |
-| graphsFolder | string | Optional | /var/otp/graphs | The folder where the graphs should be stored. |
+| graphObjUri | string | Optional | | Either an HTTP(S) URL or AWS S3 URI where the Graph.obj should be downloaded from for server-only runs. If `buildGraph` is set to false and `runServer` is set to true, this value must be defined. If `uploadGraph` is set to true, this value must be an AWS S3 URI that can be uploaded to. |
 | jarFile | string | Optional | /opt/otp-1.4.0-shaded.jar | The full path to the OTP jar file. |
-| jarUrl | string | Optional | https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar | A url where the OTP jar can be downloaded from. |
+| jarUri | string | Optional | https://repo1.maven.org/maven2/org/opentripplanner/otp/1.4.0/otp-1.4.0-shaded.jar | Either an HTTP(S) URL or AWS S3 URI where the OTP jar can be downloaded from. |
 | nonce | string | Optional | | A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config. |
 | otpRunnerLogFile | string | Optional | /var/log/otp-runner.log | The path where the otp-runner logs should be written to. |
-| prefixLogUploadsWithInstanceId | boolean | Optional | false | If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to s3. |
+| otpVersion | | Optional | 1.x | The major version of OTP that is being used. Must be either `1.x` or `2.x`. This is used in order to generate the appropriate command line parameters to run OTP with. |
+| prefixLogUploadsWithInstanceId | boolean | Optional | false | If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to AWS S3. |
 | routerConfigJSON | string | Optional | | The raw contents to write to the router-config.json file. |
-| routerFolderDownloads | array | Optional | | An array of urls that should be downloaded to the router folder. This can includes items such as GTFS files, OSM data, build-config.json, router-config.json or elevation files. |
 | routerName | string | Optional | default | The name of the OTP router. |
 | runServer | boolean | Optional | true | If true, run OTP as a server.  If this flag and the `buildGraph` flag are both false, an error will occur. |
-| s3UploadPath | string | Optional | | The base path of an s3 bucket where files will be uploaded to. Ex: `s3://bucket-name/folder` |
+| s3UploadPath | string | Optional | | The base AWS S3 URI of where files will be uploaded to. Ex: `s3://bucket-name/folder` |
 | serverLogFile | string | Optional | /var/log/otp-server.log | The file location to write server logs to. |
 | serverStartupTimeoutSeconds | number | Optional | 300 | The amount of time to wait for a successful server startup (server initialization and graph read) before failing. |
 | statusFileLocation | string | Optional | status.json | The file location to write status updates about this script to. |
-| uploadGraphBuildLogs | boolean | Optional | false | If true, the logs from a graph build will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-build.log`. Note: if this is set to true, `s3UploadPath` must be defined. |
-| uploadGraphBuildReport | boolean | Optional | false | If true, the OTP-generated graph build report will be zipped up and uploaded to the provided s3 bucket to the path `${s3UploadPath}/graph-build-report.zip`. Note: if this is set to true, `s3UploadPath` must be defined. |
-| uploadGraph | boolean | Optional | false | If true, the Graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUrl` must be defined and be a valid AWS s3 path. |
-| uploadOtpRunnerLogs | boolean | Optional | false | If true, the logs from the otp-runner script will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-runner.log`. Note: if this is set to true, `s3UploadPath` must be defined. |
-| uploadServerStartupLogs | boolean | Optional | false | If true, the logs from the server startup will be uploaded to the provided s3 bucket to the path `${s3UploadPath}/otp-server.log`. Note: if this is set to true, `s3UploadPath` must be defined. |
+| uploadGraphBuildLogs | boolean | Optional | false | If true, the logs from a graph build will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-build.log`. Note: if this is set to true, `s3UploadPath` must be defined. |
+| uploadGraphBuildReport | boolean | Optional | false | If true, the OTP-generated graph build report will be zipped up and uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/graph-build-report.zip`. Note: if this is set to true, `s3UploadPath` must be defined. |
+| uploadGraph | boolean | Optional | false | If true, the Graph.obj file will be uploaded after graph build. Note: if this is set to true, `graphObjUri` must be defined and be a valid AWS S3 URI. |
+| uploadOtpRunnerLogs | boolean | Optional | false | If true, the logs from the otp-runner script will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-runner.log`. Note: if this is set to true, `s3UploadPath` must be defined. |
+| uploadServerStartupLogs | boolean | Optional | false | If true, the logs from the server startup will be uploaded to the provided AWS S3 bucket to the path `${s3UploadPath}/otp-server.log`. Note: if this is set to true, `s3UploadPath` must be defined. |

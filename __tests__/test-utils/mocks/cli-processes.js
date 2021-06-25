@@ -2,6 +2,7 @@ const { Readable } = require('stream')
 
 const fs = require('fs-extra')
 
+const { TEMP_TEST_FOLDER } = require('../constants')
 const { addCustomExecaMock, addCustomSpawnMock } = require('./modules')
 
 /**
@@ -11,8 +12,8 @@ const { addCustomExecaMock, addCustomSpawnMock } = require('./modules')
 let s3uploads = {}
 
 /**
- * Adds a mocks of an s3 transfer. If the destination of the file is an s3
- * bucket, the contents of the source file will be copied to the s3uploads
+ * Adds a mocks of an AWS S3 transfer. If the destination of the file is an AWS
+ * S3 URI, the contents of the source file will be copied to the s3uploads
  * variable for future verification.
  *
  * @param  {string} src the source file
@@ -22,7 +23,7 @@ function mockS3Transfer (src, dst) {
   addCustomExecaMock({
     args: ['aws', ['s3', 'cp', src, dst]],
     fn: async () => {
-      // if the destination is an s3 bucket, simulate the upload by storing the
+      // if the destination is an AWS S3 URI, simulate the upload by storing the
       // contents of the file as uploaded in a lookup table
       if (dst.startsWith('s3:')) {
         s3uploads[dst] = await fs.readFile(src, 'UTF-8')
@@ -32,44 +33,44 @@ function mockS3Transfer (src, dst) {
 }
 
 /**
- * Shorthand function to create a mock for an aws s3 cp operation that transfers
- * a file from the local machine to s3. This assumes the default s3 bucket and
- * default local temp test files location are used, unless the localPath
- * argument is also provided.
+ * Shorthand function to create a mock for an AWS S3 cp operation that transfers
+ * a file from the local machine to AWS S3. This assumes the default AWS S3
+ * bucket and default local temp test files location are used, unless the
+ * localPath argument is also provided.
  *
  * @param  {String} filename The filename without paths to transfer. It is
- *    assumed that this filename is present in the ./temp-test-files folder and
- *    that the file should be uploaded to the s3://mock-bucket s3 bucket.
+ *    assumed that this filename is present in the temp test folder and
+ *    that the file should be uploaded to the s3://mock-bucket AWS S3 bucket.
  * @param  {String} [localPath] If provided, use this path instead of just the
- *    temp-test-files folder plus the filename.
+ *    temp test folder plus the filename.
  */
 function mockLocalToS3Transfer (filename, localPath) {
-  const src = localPath || `./temp-test-files/${filename}`
+  const src = localPath || `./${TEMP_TEST_FOLDER}/${filename}`
   const dst = `s3://mock-bucket/${filename}`
   mockS3Transfer(src, dst)
 }
 
 /**
- * Shorthand function to create a mock for an aws s3 cp operation that transfers
- * a file from s3 to the local machine. This assumes the default s3 bucket and
- * default local temp test files location are used, unless the localPath
- * argument is also provided.
+ * Shorthand function to create a mock for an AWS S3 cp operation that transfers
+ * a file from AWS S3 to the local machine. This assumes the default AWS S3
+ * bucket and default local temp test files location are used, unless the
+ * localPath argument is also provided.
  *
  * @param  {String} filename The filename without paths to transfer. It is
- *    assumed that this filename is present in the s3://mock-bucket s3 bucket
- *    and that the file should be downloaded into the ./temp-test-files folder.
+ *    assumed that this filename is present in the s3://mock-bucket AWS S3
+ *    bucket and that the file should be downloaded into the temp test folder.
  * @param  {String} [localPath] If provided, use this path instead of just the
- *    temp-test-files folder plus the filename.
+ *    temp test folder plus the filename.
  */
 function mockS3ToLocalTransfer (filename, localPath) {
   mockS3Transfer(
     `s3://mock-bucket/${filename}`,
-    localPath || `./temp-test-files/${filename}`
+    localPath || `./${TEMP_TEST_FOLDER}/${filename}`
   )
 }
 
 /**
- * Returns the map of files that have been "mock uploaded" to s3
+ * Returns the map of files that have been "mock uploaded" to AWS S3
  */
 function getS3Uploads () {
   return s3uploads
@@ -81,27 +82,37 @@ function getS3Uploads () {
  *  setup that successfully "runs" by writing a Graph.obj file, a graph report
  *  and mock logging success
  */
-function mockOTPGraphBuild (shouldPass = false) {
+function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
+  const javaArgs = [
+    '-jar',
+    '-Xmx7902848k'
+  ]
+  const baseFolder = otpV2
+    ? `${TEMP_TEST_FOLDER}/otp2-base-folder`
+    : `${TEMP_TEST_FOLDER}/default`
+  if (otpV2) {
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
+    javaArgs.push('--build')
+    javaArgs.push('--save')
+    javaArgs.push(`./${baseFolder}`)
+  } else {
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok.jar`)
+    javaArgs.push('--build')
+    javaArgs.push(baseFolder)
+  }
   addCustomExecaMock({
-    args: [
-      'java',
-      [
-        '-jar',
-        '-Xmx7902848k',
-        './temp-test-files/ok.jar',
-        '--build',
-        'temp-test-files/default'
-      ],
-      { all: true }
-    ],
+    args: ['java', javaArgs, { all: true }],
     fn: () => {
       if (shouldPass) {
         // write a mock graph to file
-        fs.writeFileSync('./temp-test-files/default/Graph.obj', 'mock graph')
+        fs.writeFileSync(
+          `./${baseFolder}/${otpV2 ? 'graph.obj' : 'Graph.obj'}`,
+          'mock graph'
+        )
 
         // write a mock graph build report to file
         fs.writeFileSync(
-          './temp-test-files/default/report',
+          `./${baseFolder}/report`,
           'mock graph build report'
         )
       }
@@ -141,33 +152,42 @@ function mockOTPServerStart ({
   customLogs,
   exitCode,
   graphLoad,
+  otpV2,
   serverStarts
 }) {
+  const javaArgs = [
+    '-jar',
+    '-Xmx7902848k'
+  ]
+  if (otpV2) {
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
+    javaArgs.push('--load')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/otp2-base-folder`)
+  } else {
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/ok.jar`)
+    javaArgs.push('--server')
+    javaArgs.push('--graphs')
+    javaArgs.push(`./${TEMP_TEST_FOLDER}/`)
+    javaArgs.push('--router')
+    javaArgs.push('default')
+  }
   addCustomSpawnMock({
-    args: [
-      'java',
-      [
-        '-jar',
-        '-Xmx7902848k',
-        './temp-test-files/ok.jar',
-        '--server',
-        '--graphs',
-        './temp-test-files/',
-        '--router',
-        'default'
-      ]
-    ],
+    args: ['java', javaArgs],
     fn: () => {
       const logs = []
       if (graphLoad) {
-        logs.push('22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357')
+        if (otpV2) {
+          logs.push('22:10:49.222 INFO (Graph.java:731) Graph read. |V|=156146 |E|=397357')
+        } else {
+          logs.push('22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357')
+        }
       }
       if (serverStarts) {
         logs.push('22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running.')
       }
 
       fs.writeFileSync(
-        './temp-test-files/otp-server.log',
+        `./${TEMP_TEST_FOLDER}/otp-server.log`,
         customLogs || logs.join('\n')
       )
       return {
@@ -183,23 +203,21 @@ function mockOTPServerStart ({
 /**
  * A helper for mocking the zipping up of the graph build report
  */
-function mockZippingGraphBuildReport () {
+function mockZippingGraphBuildReport (otpV2 = false) {
+  let baseFolder, cwd
+  if (otpV2) {
+    baseFolder = `./${TEMP_TEST_FOLDER}/otp2-base-folder`
+    cwd = `./${TEMP_TEST_FOLDER}/otp2-base-folder`
+  } else {
+    baseFolder = `./${TEMP_TEST_FOLDER}/default`
+    cwd = `${TEMP_TEST_FOLDER}/default`
+  }
   addCustomExecaMock({
-    args: [
-      'zip',
-      [
-        '-r',
-        'report.zip',
-        'report'
-      ],
-      {
-        cwd: 'temp-test-files/default'
-      }
-    ],
+    args: ['zip', ['-r', 'report.zip', 'report'], { cwd }],
     fn: async () => {
       await fs.writeFile(
-        './temp-test-files/default/report.zip',
-        await fs.readFile('./temp-test-files/default/report')
+        `${baseFolder}/report.zip`,
+        await fs.readFile(`${baseFolder}/report`)
       )
     }
   })
