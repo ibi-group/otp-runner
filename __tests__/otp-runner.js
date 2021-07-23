@@ -1,8 +1,6 @@
 const fs = require('fs-extra')
 const nock = require('nock')
 
-const OtpRunner = require('../lib')
-
 const { TEMP_TEST_FOLDER } = require('./test-utils/constants')
 const {
   addCustomExecaMock,
@@ -20,6 +18,7 @@ const {
 } = require('./test-utils/mocks/cli-processes')
 
 // IMPORTANT: import this after mocking modules
+const OtpRunner = require('../lib')
 
 /**
  * Helper that asserts the status.json file matches a snapshot
