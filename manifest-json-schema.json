@@ -69,6 +69,12 @@
       "default": "1.x",
       "description": "The major version of OTP that is being used. Must be either `1.x` or `2.x`. This is used in order to generate the appropriate command line parameters to run OTP with."
     },
+    "peliasCsv": {
+      "type": "array",
+      "description": "An array of URLs pointing to CSV files the Pelias instance should download and import.",
+      "items": {"type": "string", "description": "Either a HTTP(S) URL or AWS S3 URI."},
+      "default": []
+    },
     "prefixLogUploadsWithInstanceId": {
       "type": "boolean",
       "description": "If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to AWS S3.",

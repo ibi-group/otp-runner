@@ -59,6 +59,7 @@ It is possible to download files from AWS S3 as long as the proper AWS S3 url is
 | nonce | string | Optional | | A value that will be written in status.json files in order to verify that the status file was produced by a particular run with the provided config. |
 | otpRunnerLogFile | string | Optional | /var/log/otp-runner.log | The path where the otp-runner logs should be written to. |
 | otpVersion | | Optional | 1.x | The major version of OTP that is being used. Must be either `1.x` or `2.x`. This is used in order to generate the appropriate command line parameters to run OTP with. |
+| peliasCsv | array | Optional | | An array of URLs pointing to CSV files the Pelias instance should download and import. |
 | prefixLogUploadsWithInstanceId | boolean | Optional | false | If true, will obtain the ec2 instance ID and prefix the otp-runner and otp-server log files with this instance ID when uploading to AWS S3. |
 | routerConfigJSON | string | Optional | | The raw contents to write to the router-config.json file. |
 | routerName | string | Optional | default | The name of the OTP router. |
