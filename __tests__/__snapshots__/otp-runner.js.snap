@@ -247,7 +247,7 @@ exports[`otp-runner mocked runner tests successes should use otp 2.x to build a 
 exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 4`] = `"Mock building completed successfully!"`;
 
 exports[`otp-runner mocked runner tests successes should use otp 2.x to build a graph and start a server 5`] = `
-"22:10:49.222 INFO (Graph.java:731) Graph read. |V|=156146 |E|=397357
+"22:10:49.222 INFO (Graph.java:731) Transit loaded. |V|=156146 |E|=397357
 22:10:53.765 INFO (GrizzlyServer.java:153) Grizzly server running."
 `;
 
