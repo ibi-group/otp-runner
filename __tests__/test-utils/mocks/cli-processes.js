@@ -177,7 +177,7 @@ function mockOTPServerStart ({
       const logs = []
       if (graphLoad) {
         if (otpV2) {
-          logs.push('22:10:49.222 INFO (Graph.java:731) Graph read. |V|=156146 |E|=397357')
+          logs.push('22:10:49.222 INFO (Graph.java:731) Transit loaded. |V|=156146 |E|=397357')
         } else {
           logs.push('22:10:49.222 INFO (Graph.java:731) Main graph read. |V|=156146 |E|=397357')
         }
