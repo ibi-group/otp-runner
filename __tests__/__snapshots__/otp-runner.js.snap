@@ -258,7 +258,7 @@ exports[`otp-runner mocked runner tests successes should use otp 2.x to build a 
 exports[`otp-runner unit tests should generate 1.x build cli arguments 1`] = `
 Array [
   "-jar",
-  "-Xmx7902848k",
+  "-Xmx8000000000k",
   "./temp-test-files/ok.jar",
   "--build",
   "temp-test-files/default",
@@ -268,7 +268,7 @@ Array [
 exports[`otp-runner unit tests should generate 1.x serve cli arguments 1`] = `
 Array [
   "-jar",
-  "-Xmx7902848k",
+  "-Xmx8000000000k",
   "./temp-test-files/ok.jar",
   "--server",
   "--graphs",
@@ -281,7 +281,7 @@ Array [
 exports[`otp-runner unit tests should generate 2.x build cli arguments 1`] = `
 Array [
   "-jar",
-  "-Xmx7902848k",
+  "-Xmx8000000000k",
   "./temp-test-files/ok.jar",
   "--build",
   "--save",
@@ -292,7 +292,7 @@ Array [
 exports[`otp-runner unit tests should generate 2.x serve cli arguments 1`] = `
 Array [
   "-jar",
-  "-Xmx7902848k",
+  "-Xmx8000000000k",
   "./temp-test-files/ok.jar",
   "--load",
   "./temp-test-files/",
