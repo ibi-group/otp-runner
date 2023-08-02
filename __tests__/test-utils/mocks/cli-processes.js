@@ -85,7 +85,7 @@ function getS3Uploads () {
 function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
   const javaArgs = [
     '-jar',
-    '-Xmx7902848k'
+    '-Xmx8000000000k'
   ]
   const baseFolder = otpV2
     ? `${TEMP_TEST_FOLDER}/otp2-base-folder`
@@ -157,7 +157,7 @@ function mockOTPServerStart ({
 }) {
   const javaArgs = [
     '-jar',
-    '-Xmx7902848k'
+    '-Xmx8000000000k'
   ]
   if (otpV2) {
     javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
