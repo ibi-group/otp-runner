@@ -285,6 +285,7 @@ Array [
   "./temp-test-files/ok.jar",
   "--build",
   "--save",
+  "--abortOnUnknownConfig",
   "./temp-test-files/",
 ]
 `;
