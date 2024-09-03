@@ -1,7 +1,6 @@
 {
   "baseFolder": "./temp-test-files/otp2-base-folder",
   "baseFolderDownloads": [{ "uri": "s3://mock-bucket/gtfs.zip" }],
-  "buildConfigJSON": "{\"htmlAnnotations\": true}",
   "buildGraph": true,
   "buildLogFile": "./temp-test-files/otp-build.log",
   "jarFile": "./temp-test-files/ok-otp-2.jar",
