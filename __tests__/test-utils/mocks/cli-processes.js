@@ -94,6 +94,7 @@ function mockOTPGraphBuild (shouldPass = false, otpV2 = false) {
     javaArgs.push(`./${TEMP_TEST_FOLDER}/ok-otp-2.jar`)
     javaArgs.push('--build')
     javaArgs.push('--save')
+    javaArgs.push('--abortOnUnknownConfig')
     javaArgs.push(`./${baseFolder}`)
   } else {
     javaArgs.push(`./${TEMP_TEST_FOLDER}/ok.jar`)
