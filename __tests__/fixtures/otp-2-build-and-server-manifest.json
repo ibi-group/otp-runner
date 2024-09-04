@@ -1,6 +1,7 @@
 {
   "baseFolder": "./temp-test-files/otp2-base-folder",
   "baseFolderDownloads": [{ "uri": "s3://mock-bucket/gtfs.zip" }],
+  "buildConfigJSON": "{}",
   "buildGraph": true,
   "buildLogFile": "./temp-test-files/otp-build.log",
   "jarFile": "./temp-test-files/ok-otp-2.jar",
@@ -8,7 +9,7 @@
   "graphObjUri": "s3://mock-bucket/graph.obj",
   "otpRunnerLogFile": "./temp-test-files/otp-runner.log",
   "otpVersion": "2.x",
-  "routerConfigJSON": "{\"timeout\": 4}",
+  "routerConfigJSON": "{}",
   "s3UploadPath": "s3://mock-bucket",
   "serverLogFile": "./temp-test-files/otp-server.log",
   "statusFileLocation": "./temp-test-files/status.json",
